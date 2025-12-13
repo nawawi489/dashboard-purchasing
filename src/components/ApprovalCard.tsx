@@ -16,13 +16,13 @@ type Props = {
 
 export default function ApprovalCard(props: Props) {
   const total = (props.price || 0) * (props.quantity || 0)
-  const statusColor = props.status === 'Terima' ? '#16a34a' : props.status === 'Tolak' ? '#dc2626' : '#64748b'
+  const statusClass = props.status === 'Terima' ? 'status-terima' : props.status === 'Tolak' ? 'status-tolak' : 'status-pending'
 
   return (
     <div className="approval-card">
       <div className="approval-card__header">
         <div className="approval-card__trx">#{props.trxId}</div>
-        <div className="approval-card__tag" style={{ color: statusColor, borderColor: statusColor }}>{props.status}</div>
+        <div className={`approval-card__tag ${statusClass}`}>{props.status}</div>
       </div>
       <div className="approval-card__body">
         <div className="approval-card__title-row">

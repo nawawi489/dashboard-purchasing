@@ -1,18 +1,12 @@
 import { useNavigate, Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import Header from '../components/Header'
-import { normalizeNumber, normalizeText } from '../utils/format'
-import { fetchItems } from '../services/items'
+import ItemSearchDropdown from '../components/ItemSearchDropdown'
+import { OUTLETS } from '../constants'
 
 export default function PurchaseRequestPage() {
   const navigate = useNavigate()
-  const outlets = [
-    'Pizza Nyantuy Sungai Poso',
-    'Pizza Nyantuy Gowa',
-    'Pizza Nyantuy Sudiang',
-    'Pizza Nyantuy Barombong',
-    'Pizza Nyantuy Limbung',
-  ]
+  const outlets = OUTLETS
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10))
   const [outlet, setOutlet] = useState<string>('')
@@ -24,43 +18,6 @@ export default function PurchaseRequestPage() {
   const [price, setPrice] = useState<number>(0)
   const [phone, setPhone] = useState<string>('')
   const [itemsList, setItemsList] = useState<Array<{ name: string; unit: string; quantity: number; price?: number; supplier?: string; phone?: string }>>([])
-  const [items, setItems] = useState<Array<{ name: string; unit: string; supplier?: string; price?: number; phone?: string }>>([])
-  const [search, setSearch] = useState<string>('')
-  const [open, setOpen] = useState<boolean>(false)
-  const [loadingItems, setLoadingItems] = useState<boolean>(false)
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const dropdownRef = useRef<HTMLDivElement | null>(null)
-
-  const formatIDR = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
-
-  const loadItems = async () => {
-    if (loadingItems) return
-    setLoadingItems(true)
-    setLoadError(null)
-    try {
-      const data = await fetchItems()
-      setItems(data)
-    } catch (e) {
-      console.error('Gagal mengambil data barang', e)
-      setLoadError('Tidak dapat memuat data barang')
-    } finally {
-      setLoadingItems(false)
-    }
-  }
-
-  useEffect(() => { loadItems() }, [])
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (!dropdownRef.current) return
-      if (!dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false)
-        setSearch('')
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
 
   const addToList = () => {
     if (!itemName || !unit || quantity <= 0) return
@@ -100,6 +57,7 @@ export default function PurchaseRequestPage() {
     navigate('/confirm-po', { state: payload })
     setSubmitting(false)
   }
+
   return (
     <div className="container">
       <Header title="Permintaan Pembelian" backTo="/" />
@@ -121,54 +79,23 @@ export default function PurchaseRequestPage() {
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
-          <div ref={dropdownRef} className="control dropdown">
-            <label className="label">Nama Barang</label>
-            <input 
-              className="input" 
-              placeholder="Cari atau pilih barang"
-              value={open ? search : itemName}
-              onChange={e => {
-                setOpen(true)
-                setSearch(e.target.value)
-              }}
-              onFocus={() => { setOpen(true); loadItems() }}
-            />
-            {open && (
-              <div className="dropdown-panel" onMouseDown={e => e.preventDefault()}>
-                {loadingItems ? (
-                  <div className="dropdown-empty">Memuat data…</div>
-                ) : loadError ? (
-                  <div className="dropdown-empty">{loadError}</div>
-                ) : (
-                  (() => {
-                    const q = search.trim().toLowerCase()
-                    const filtered = (q ? items.filter(it => it.name.toLowerCase().includes(q)) : items).slice(0, 50)
-                    if (filtered.length === 0) return <div className="dropdown-empty">Tidak ada hasil</div>
-                    return filtered.map(it => (
-                      <div 
-                        key={it.name} 
-                        className="dropdown-item"
-                        onClick={() => {
-                          setItemName(it.name)
-                          setUnit(it.unit)
-                          setSupplier(it.supplier || '')
-                          setPrice(it.price || 0)
-                          setPhone(it.phone || '')
-                          setOpen(false)
-                          setSearch('')
-                        }}
-                      >
-                        <span>{it.name}</span>
-                        <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                          {it.supplier || '-'}
-                        </span>
-                      </div>
-                    ))
-                  })()
-                )}
-              </div>
-            )}
-          </div>
+          
+          <ItemSearchDropdown 
+            value={itemName}
+            onChange={(item, name) => {
+              setItemName(name)
+              if (item) {
+                setUnit(item.unit)
+                setSupplier(item.supplier || '')
+                setPrice(item.price || 0)
+                setPhone(item.phone || '')
+              } else {
+                // Reset fields if needed when custom name is typed
+                // For now, we keep previous values or user clears them manually
+              }
+            }}
+          />
+
           <div className="control">
             <label className="label">Satuan</label>
             <input className="input" placeholder="Contoh: kg, box, pcs" value={unit} onChange={e => setUnit(e.target.value)} readOnly={true} />

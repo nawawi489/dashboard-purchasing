@@ -1,6 +1,7 @@
 import Header from '../components/Header'
 import { useEffect, useMemo, useState } from 'react'
 import ApprovalCard from '../components/ApprovalCard'
+import Pagination from '../components/Pagination'
 import { fetchApprovalItems, ApprovalItem } from '../services/approval'
 
 export default function ApprovalPage() {
@@ -36,7 +37,10 @@ export default function ApprovalPage() {
   }, [items])
 
   const filtered = useMemo(() => {
-    let base = outlet ? items.filter(i => i.outlet === outlet) : items
+    // Filter hanya yang VerifikasiSPV = false
+    let base = items.filter(i => i.verifikasiSpv === false)
+    
+    if (outlet) base = base.filter(i => i.outlet === outlet)
     if (status) base = base.filter(i => i.status === status)
     return base
   }, [items, outlet, status])
@@ -117,11 +121,11 @@ export default function ApprovalPage() {
             />
           ))
         )}
-      </section>
-      <section className="actions" style={{ marginTop: 12 }}>
-        <button className="btn" onClick={() => setPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}>Sebelumnya</button>
-        <div style={{ alignSelf: 'center' }}>Halaman {currentPage} / {totalPages}</div>
-        <button className="btn" onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={currentPage >= totalPages}>Berikutnya</button>
+        <Pagination 
+          currentPage={currentPage} 
+          totalPages={totalPages} 
+          onPageChange={setPage} 
+        />
       </section>
     </div>
   )

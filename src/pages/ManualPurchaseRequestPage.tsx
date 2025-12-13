@@ -1,16 +1,11 @@
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import Header from '../components/Header'
+import { OUTLETS } from '../constants'
 
 export default function ManualPurchaseRequestPage() {
   const navigate = useNavigate()
-  const outlets = [
-    'Pizza Nyantuy Sungai Poso',
-    'Pizza Nyantuy Gowa',
-    'Pizza Nyantuy Sudiang',
-    'Pizza Nyantuy Barombong',
-    'Pizza Nyantuy Limbung',
-  ]
+  const outlets = OUTLETS
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10))
   const [outlet, setOutlet] = useState<string>('')

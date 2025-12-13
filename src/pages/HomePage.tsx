@@ -17,6 +17,8 @@ export function HomePage() {
     () => [
       { key: 'pr', title: 'Permintaan PO', subtitle: 'Ajukan kebutuhan pembelian', emoji: '📝', href: '/pr' },
       { key: 'approval', title: 'Approval', subtitle: 'Status persetujuan pembelian', emoji: '✅', href: '/approval' },
+      { key: 'bill', title: 'Tagihan PO', subtitle: 'Input bukti pembayaran tagihan PO', emoji: '🧾', href: '/bill' },
+      { key: 'plafon', title: 'Plafon', subtitle: 'Update sisa modal belanja', emoji: '💰', href: '/plafon' },
     ],
     [],
   )

@@ -6,10 +6,12 @@ import PurchaseRequestPage from './pages/PurchaseRequestPage'
 import ManualPurchaseRequestPage from './pages/ManualPurchaseRequestPage'
 import VendorPage from './pages/VendorPage'
 import ApprovalPage from './pages/ApprovalPage'
+import PlafonPage from './pages/PlafonPage'
 import ReportPage from './pages/ReportPage'
 import SettingsPage from './pages/SettingsPage'
 import ConfirmPOPage from './pages/ConfirmPOPage'
 import POSuccessPage from './pages/POSuccessPage'
+import BillPOPage from './pages/BillPOPage'
 import Footer from './components/Footer'
 
 function ProtectedLayout() {
@@ -40,8 +42,10 @@ export default function App() {
           <Route path="/pr/manual" element={<ManualPurchaseRequestPage />} />
           <Route path="/vendor" element={<VendorPage />} />
           <Route path="/approval" element={<ApprovalPage />} />
+          <Route path="/plafon" element={<PlafonPage />} />
           <Route path="/report" element={<ReportPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/bill" element={<BillPOPage />} />
           <Route path="/confirm-po" element={<ConfirmPOPage />} />
           <Route path="/po-success" element={<POSuccessPage />} />
         </Route>

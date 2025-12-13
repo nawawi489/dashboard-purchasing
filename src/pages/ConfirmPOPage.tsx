@@ -55,12 +55,15 @@ export default function ConfirmPOPage() {
           <div className="control"><div className="label">Supplier</div><div>{headerSupplier || '-'}</div></div>
           <div className="control"><div className="label">Total</div><div style={{ fontWeight: 700, color: 'var(--primary)' }}>{formatIDR(grandTotal)}</div></div>
         </div>
-        <div className="form-grid" style={{ marginTop: 12 }}>
+
+        <div className="section-divider" />
+
+        <div className="item-list">
           {items.length === 0 ? (
             <div className="dropdown-empty">Tidak ada item</div>
           ) : (
             items.map((it) => (
-              <div key={it.name + it.unit} className="control line-row-4">
+              <div key={it.name + it.unit} className="control line-row-4 item-row">
                 <div>
                   <div className="label">Nama Barang</div>
                   <div>{it.name}</div>
