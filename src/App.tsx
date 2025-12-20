@@ -42,7 +42,7 @@ export default function App() {
           <Route path="/pr/manual" element={<ManualPurchaseRequestPage />} />
           <Route path="/vendor" element={<VendorPage />} />
           <Route path="/approval" element={<ApprovalPage />} />
-          <Route path="/plafon" element={<PlafonPage />} />
+          {/* <Route path="/plafon" element={<PlafonPage />} /> */}
           <Route path="/report" element={<ReportPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/bill" element={<BillPOPage />} />
