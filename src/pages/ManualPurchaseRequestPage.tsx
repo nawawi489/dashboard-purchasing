@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import Header from '../components/Header'
 import { OUTLETS } from '../constants'
+import { LineItem } from '../types'
 
 export default function ManualPurchaseRequestPage() {
   const navigate = useNavigate()
@@ -15,7 +16,24 @@ export default function ManualPurchaseRequestPage() {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [supplier, setSupplier] = useState<string>('')
   const [price, setPrice] = useState<number>(0)
-  const [itemsList, setItemsList] = useState<Array<{ name: string; unit: string; quantity: number; price?: number; supplier?: string; phone?: string }>>([])
+  const [itemsList, setItemsList] = useState<LineItem[]>([])
+  const [editQuantities, setEditQuantities] = useState<Record<number, string>>({})
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => setDate(e.target.value)
+  const handleOutletChange = (e: React.ChangeEvent<HTMLSelectElement>) => setOutlet(e.target.value)
+  const handleItemNameChange = (e: React.ChangeEvent<HTMLInputElement>) => setItemName(e.target.value)
+  const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => setUnit(e.target.value)
+  const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => setSupplier(e.target.value)
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => setPrice(Number(e.target.value))
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => setQuantity(Number(e.target.value))
+
+  const resetForm = () => {
+    setItemName('')
+    setUnit('')
+    setSupplier('')
+    setPrice(0)
+    setQuantity(1)
+  }
 
   const addToList = () => {
     if (!itemName || !unit || quantity <= 0) return
@@ -39,19 +57,29 @@ export default function ManualPurchaseRequestPage() {
     } else {
       setItemsList([...itemsList, { name: itemName, unit, quantity, price, supplier: currentSupplier }])
     }
-    setItemName('')
-    setUnit('')
-    // Keep supplier same for convenience or reset? Usually reset if we want fresh input, but user might be entering multiple items from same supplier.
-    // In original PR page, supplier comes from item selection. Here it is manual.
-    // Let's reset it to avoid confusion, or keep it? The requirement says "input manual", doesn't specify behavior.
-    // Resetting seems safer to avoid accidental wrong supplier.
-    // setSupplier('') 
-    // Actually, if they are adding multiple items from same supplier manually, keeping it might be better.
-    // But let's follow the original page's behavior:
-    // Original: setSupplier('') (line 86)
-    setSupplier('')
-    setPrice(0)
-    setQuantity(1)
+    resetForm()
+  }
+
+  const handleListQtyChange = (idx: number, value: string) => {
+    setEditQuantities(prev => ({ ...prev, [idx]: value }))
+  }
+
+  const handleListQtyBlur = (idx: number) => {
+    const raw = editQuantities[idx]
+    const num = Number(raw)
+    const q = !raw || isNaN(num) || num <= 0 ? 1 : num
+    const next = [...itemsList]
+    next[idx] = { ...next[idx], quantity: q }
+    setItemsList(next)
+    setEditQuantities(prev => {
+      const { [idx]: _, ...rest } = prev
+      return rest
+    })
+  }
+
+  const handleRemoveItem = (idx: number) => {
+    const next = itemsList.filter((_, i) => i !== idx)
+    setItemsList(next)
   }
 
   const handleSubmit = async () => {
@@ -78,11 +106,11 @@ export default function ManualPurchaseRequestPage() {
         <div className="form-grid">
           <div className="control">
             <label className="label">Tanggal PO</label>
-            <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} />
+            <input type="date" className="input" value={date} onChange={handleDateChange} />
           </div>
           <div className="control">
             <label className="label">Outlet</label>
-            <select className="select" value={outlet} onChange={e => setOutlet(e.target.value)}>
+            <select className="select" value={outlet} onChange={handleOutletChange}>
               <option value="">Pilih Outlet</option>
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
@@ -93,7 +121,7 @@ export default function ManualPurchaseRequestPage() {
               className="input" 
               placeholder="Nama Barang"
               value={itemName}
-              onChange={e => setItemName(e.target.value)}
+              onChange={handleItemNameChange}
             />
           </div>
           <div className="control">
@@ -102,7 +130,7 @@ export default function ManualPurchaseRequestPage() {
               className="input" 
               placeholder="Contoh: kg, box, pcs" 
               value={unit} 
-              onChange={e => setUnit(e.target.value)} 
+              onChange={handleUnitChange} 
             />
           </div>
           <div className="control">
@@ -111,7 +139,7 @@ export default function ManualPurchaseRequestPage() {
               className="input" 
               placeholder="Nama Supplier"
               value={supplier} 
-              onChange={e => setSupplier(e.target.value)} 
+              onChange={handleSupplierChange} 
             />
           </div>
           <div className="control">
@@ -121,16 +149,16 @@ export default function ManualPurchaseRequestPage() {
               className="input" 
               placeholder="0"
               value={price || ''} 
-              onChange={e => setPrice(Number(e.target.value))} 
+              onChange={handlePriceChange} 
             />
           </div>
           <div className="control">
             <label className="label">Jumlah</label>
-            <input type="number" min={1} className="input" value={quantity} onChange={e => setQuantity(Number(e.target.value))} />
+            <input type="number" min={1} className="input" value={quantity} onChange={handleQuantityChange} />
           </div>
         </div>
         <div className="actions">
-          <button className="btn" onClick={() => { setItemName(''); setUnit(''); setSupplier(''); setPrice(0); setQuantity(1); }}>Reset</button>
+          <button className="btn" onClick={resetForm}>Reset</button>
           <button className="btn" disabled={!itemName || !unit || quantity <= 0} onClick={addToList}>Tambah ke daftar</button>
           <button className="btn btn-primary" disabled={submitting || !date || !outlet || itemsList.length === 0} onClick={handleSubmit}>Kirim</button>
         </div>
@@ -154,16 +182,15 @@ export default function ManualPurchaseRequestPage() {
                 <div>
                   <div className="label">Jumlah</div>
                   <div className="qty-row">
-                    <input type="number" min={1} className="input qty-input" value={it.quantity} onChange={e => {
-                      const q = Number(e.target.value) || 1
-                      const next = [...itemsList]
-                      next[idx] = { ...it, quantity: q }
-                      setItemsList(next)
-                    }} />
-                    <button className="btn" onClick={() => {
-                      const next = itemsList.filter((x, i) => i !== idx)
-                      setItemsList(next)
-                    }}>Hapus</button>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      className="input qty-input" 
+                      value={editQuantities[idx] ?? String(it.quantity)} 
+                      onChange={e => handleListQtyChange(idx, e.target.value)} 
+                      onBlur={() => handleListQtyBlur(idx)}
+                    />
+                    <button className="btn" onClick={() => handleRemoveItem(idx)}>Hapus</button>
                   </div>
                 </div>
               </div>

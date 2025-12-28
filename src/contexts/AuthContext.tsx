@@ -1,4 +1,7 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
+
+// 12 jam dalam milidetik
+const SESSION_DURATION = 12 * 60 * 60 * 1000
 
 interface AuthContextType {
   isAuthenticated: boolean
@@ -12,9 +15,29 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<string | null>(null)
-  
-  // 12 jam dalam milidetik
-  const SESSION_DURATION = 12 * 60 * 60 * 1000 
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('auth_expiry')
+    localStorage.removeItem('auth_user')
+    setIsAuthenticated(false)
+    setUser(null)
+    window.location.href = '/login'
+  }, [])
+
+  const login = useCallback((username: string) => {
+    const expiry = Date.now() + SESSION_DURATION
+    localStorage.setItem('auth_token', 'dummy-token-' + Date.now())
+    localStorage.setItem('auth_expiry', String(expiry))
+    localStorage.setItem('auth_user', username)
+    setIsAuthenticated(true)
+    setUser(username)
+    
+    // Set timer baru
+    setTimeout(() => {
+      logout()
+    }, SESSION_DURATION)
+  }, [logout])
 
   useEffect(() => {
     const checkAuth = () => {
@@ -44,30 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     return checkAuth()
-  }, [])
-
-  const login = (username: string) => {
-    const expiry = Date.now() + SESSION_DURATION
-    localStorage.setItem('auth_token', 'dummy-token-' + Date.now())
-    localStorage.setItem('auth_expiry', String(expiry))
-    localStorage.setItem('auth_user', username)
-    setIsAuthenticated(true)
-    setUser(username)
-    
-    // Set timer baru
-    setTimeout(() => {
-      logout()
-    }, SESSION_DURATION)
-  }
-
-  const logout = () => {
-    localStorage.removeItem('auth_token')
-    localStorage.removeItem('auth_expiry')
-    localStorage.removeItem('auth_user')
-    setIsAuthenticated(false)
-    setUser(null)
-    window.location.href = '/login'
-  }
+  }, [logout])
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, login, logout, user }}>

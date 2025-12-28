@@ -2,7 +2,10 @@ import Header from '../components/Header'
 import { useEffect, useMemo, useState } from 'react'
 import ApprovalCard from '../components/ApprovalCard'
 import Pagination from '../components/Pagination'
-import { fetchApprovalItems, ApprovalItem } from '../services/approval'
+import { fetchApprovalItems } from '../services/approval'
+import { ApprovalItem } from '../types'
+
+type SortOrder = 'desc' | 'asc'
 
 export default function ApprovalPage() {
   const [items, setItems] = useState<ApprovalItem[]>([])
@@ -10,7 +13,7 @@ export default function ApprovalPage() {
   const [error, setError] = useState<string | null>(null)
   const [outlet, setOutlet] = useState('')
   const [status, setStatus] = useState('')
-  const [sort, setSort] = useState<'desc' | 'asc'>('desc')
+  const [sort, setSort] = useState<SortOrder>('desc')
   const [page, setPage] = useState(1)
   const pageSize = 8
 
@@ -59,6 +62,21 @@ export default function ApprovalPage() {
   const currentPage = Math.min(page, totalPages)
   const pageData = sorted.slice((currentPage - 1) * pageSize, currentPage * pageSize)
 
+  const handleOutletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setOutlet(e.target.value)
+    setPage(1)
+  }
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatus(e.target.value)
+    setPage(1)
+  }
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSort(e.target.value as SortOrder)
+    setPage(1)
+  }
+
   return (
     <div className="container">
       <Header title="Approval" backTo="/" />
@@ -70,14 +88,14 @@ export default function ApprovalPage() {
         <div className="form-grid">
           <div className="control">
             <label className="label">Filter Outlet</label>
-            <select className="select" value={outlet} onChange={e => { setOutlet(e.target.value); setPage(1) }}>
+            <select className="select" value={outlet} onChange={handleOutletChange}>
               <option value="">Semua Outlet</option>
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
           <div className="control">
             <label className="label">Filter Status</label>
-            <select className="select" value={status} onChange={e => { setStatus(e.target.value); setPage(1) }}>
+            <select className="select" value={status} onChange={handleStatusChange}>
               <option value="">Semua Status</option>
               <option value="Terima">Terima</option>
               <option value="Tolak">Tolak</option>
@@ -86,7 +104,7 @@ export default function ApprovalPage() {
           </div>
           <div className="control">
             <label className="label">Urutkan Tanggal</label>
-            <select className="select" value={sort} onChange={e => { setSort((e.target.value as any) || 'desc'); setPage(1) }}>
+            <select className="select" value={sort} onChange={handleSortChange}>
               <option value="desc">Terbaru</option>
               <option value="asc">Terlama</option>
             </select>

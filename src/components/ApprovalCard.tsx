@@ -1,18 +1,7 @@
 import { formatIDR } from '../utils/format'
+import { ApprovalItem } from '../types'
 
-type Props = {
-  trxId: string
-  tag?: string
-  date?: string
-  itemId?: string
-  itemName: string
-  outlet: string
-  supplier: string
-  unit: string
-  quantity: number
-  price: number
-  status: 'Terima' | 'Tolak' | 'Pending'
-}
+type Props = ApprovalItem
 
 export default function ApprovalCard(props: Props) {
   const total = (props.price || 0) * (props.quantity || 0)

@@ -1,9 +1,9 @@
-import { LineItem } from '../types'
+import { LineItem, POWebhookPayload } from '../types'
 import { WEBHOOK_INPUT_PO_V3 } from '../config'
 
 const INPUT_WEBHOOK_URL = WEBHOOK_INPUT_PO_V3
 
-export function buildConfirmBody(date: string, outlet: string, items: LineItem[]) {
+export function buildConfirmBody(date: string, outlet: string, items: LineItem[]): POWebhookPayload {
   const headerSupplier = items[0]?.supplier || ''
   const headerPhone = items[0]?.phone || ''
   const waNumber = (headerPhone || '').replace(/[^0-9]/g, '')
@@ -26,7 +26,7 @@ export function buildConfirmBody(date: string, outlet: string, items: LineItem[]
   }
 }
 
-export async function submitPO(body: any): Promise<Response> {
+export async function submitPO(body: POWebhookPayload): Promise<Response> {
   return fetch(INPUT_WEBHOOK_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },

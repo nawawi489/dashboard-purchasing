@@ -1,21 +1,14 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { fetchItems } from '../services/items'
-
-type Item = {
-  name: string
-  unit: string
-  supplier?: string
-  price?: number
-  phone?: string
-}
+import { ItemRow } from '../types'
 
 type Props = {
   value: string
-  onChange: (item: Item | null, name: string) => void
+  onChange: (item: ItemRow | null, name: string) => void
 }
 
 export default function ItemSearchDropdown({ value, onChange }: Props) {
-  const [items, setItems] = useState<Item[]>([])
+  const [items, setItems] = useState<ItemRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
@@ -48,6 +41,28 @@ export default function ItemSearchDropdown({ value, onChange }: Props) {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
+  const filteredItems = useMemo(() => {
+    const q = search.trim().toLowerCase()
+    return (q ? items.filter(it => it.name.toLowerCase().includes(q)) : items).slice(0, 50)
+  }, [items, search])
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setOpen(true)
+    setSearch(e.target.value)
+    if (!open) loadItems()
+  }
+
+  const handleInputFocus = () => {
+    setOpen(true)
+    loadItems()
+  }
+
+  const handleItemClick = (it: ItemRow) => {
+    onChange(it, it.name)
+    setOpen(false)
+    setSearch('')
+  }
+
   return (
     <div ref={dropdownRef} className="control dropdown">
       <label className="label">Nama Barang</label>
@@ -55,16 +70,8 @@ export default function ItemSearchDropdown({ value, onChange }: Props) {
         className="input" 
         placeholder="Cari atau pilih barang"
         value={open ? search : value}
-        onChange={e => {
-          setOpen(true)
-          setSearch(e.target.value)
-          // Allow typing new name that doesn't exist in list
-          if (!open) loadItems()
-        }}
-        onFocus={() => { 
-          setOpen(true)
-          loadItems() 
-        }}
+        onChange={handleInputChange}
+        onFocus={handleInputFocus}
       />
       {open && (
         <div className="dropdown-panel" onMouseDown={e => e.preventDefault()}>
@@ -72,30 +79,21 @@ export default function ItemSearchDropdown({ value, onChange }: Props) {
             <div className="dropdown-empty">Memuat data…</div>
           ) : error ? (
             <div className="dropdown-empty">{error}</div>
+          ) : filteredItems.length === 0 ? (
+            <div className="dropdown-empty">Tidak ada hasil</div>
           ) : (
-            (() => {
-              const q = search.trim().toLowerCase()
-              const filtered = (q ? items.filter(it => it.name.toLowerCase().includes(q)) : items).slice(0, 50)
-              
-              if (filtered.length === 0) return <div className="dropdown-empty">Tidak ada hasil</div>
-              
-              return filtered.map(it => (
-                <div 
-                  key={it.name} 
-                  className="dropdown-item"
-                  onClick={() => {
-                    onChange(it, it.name)
-                    setOpen(false)
-                    setSearch('')
-                  }}
-                >
-                  <span>{it.name}</span>
-                  <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                    {it.supplier || '-'}
-                  </span>
-                </div>
-              ))
-            })()
+            filteredItems.map(it => (
+              <div 
+                key={it.name} 
+                className="dropdown-item"
+                onClick={() => handleItemClick(it)}
+              >
+                <span>{it.name}</span>
+                <span style={{ color: 'var(--muted)', fontSize: 12 }}>
+                  {it.supplier || '-'}
+                </span>
+              </div>
+            ))
           )}
         </div>
       )}

@@ -1,8 +1,9 @@
-import { ApprovalItem } from '../services/approval'
+import { ApprovalItem } from '../types'
 import { formatIDR } from '../utils/format'
 
 type Props = {
   trxId: string
+  invoice?: string
   items: ApprovalItem[]
   onInputPaymentProof?: () => void
 }
@@ -14,7 +15,7 @@ export default function BillCard({ trxId, items, onInputPaymentProof }: Props) {
   return (
     <div className="approval-card">
       <div className="approval-card__header">
-        <div className="approval-card__trx">{trxId}</div>
+        <div className="approval-card__trx">{headerItem.nomorInvoice || trxId}</div>
         <div className="approval-card__tag">{headerItem.tag || 'PO'}</div>
       </div>
       <div className="approval-card__body">

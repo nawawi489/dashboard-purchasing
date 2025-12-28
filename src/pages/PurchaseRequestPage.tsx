@@ -3,6 +3,7 @@ import { useState } from 'react'
 import Header from '../components/Header'
 import ItemSearchDropdown from '../components/ItemSearchDropdown'
 import { OUTLETS } from '../constants'
+import { LineItem } from '../types'
 
 export default function PurchaseRequestPage() {
   const navigate = useNavigate()
@@ -17,7 +18,16 @@ export default function PurchaseRequestPage() {
   const [supplier, setSupplier] = useState<string>('')
   const [price, setPrice] = useState<number>(0)
   const [phone, setPhone] = useState<string>('')
-  const [itemsList, setItemsList] = useState<Array<{ name: string; unit: string; quantity: number; price?: number; supplier?: string; phone?: string }>>([])
+  const [itemsList, setItemsList] = useState<LineItem[]>([])
+
+  const resetForm = () => {
+    setItemName('')
+    setUnit('')
+    setSupplier('')
+    setPrice(0)
+    setPhone('')
+    setQuantity(1)
+  }
 
   const addToList = () => {
     if (!itemName || !unit || quantity <= 0) return
@@ -33,17 +43,25 @@ export default function PurchaseRequestPage() {
     if (idx >= 0) {
       const next = [...itemsList]
       const prev = next[idx]
-      next[idx] = { ...prev, quantity: prev.quantity + quantity, price: price || prev.price, supplier: currentSupplier || prev.supplier, phone: phone || prev.phone }
+      next[idx] = { 
+        ...prev, 
+        quantity: prev.quantity + quantity, 
+        price: price || prev.price, 
+        supplier: currentSupplier || prev.supplier, 
+        phone: phone || prev.phone 
+      }
       setItemsList(next)
     } else {
-      setItemsList([...itemsList, { name: itemName, unit, quantity, price, supplier: currentSupplier, phone }])
+      setItemsList([...itemsList, { 
+        name: itemName, 
+        unit, 
+        quantity, 
+        price, 
+        supplier: currentSupplier, 
+        phone 
+      }])
     }
-    setItemName('')
-    setUnit('')
-    setSupplier('')
-    setPrice(0)
-    setPhone('')
-    setQuantity(1)
+    resetForm()
   }
 
   const handleSubmit = async () => {
@@ -58,6 +76,30 @@ export default function PurchaseRequestPage() {
     setSubmitting(false)
   }
 
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDate(e.target.value)
+  }
+
+  const handleOutletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setOutlet(e.target.value)
+  }
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuantity(Number(e.target.value))
+  }
+
+  const handleItemQuantityChange = (idx: number, val: number) => {
+    const q = val || 1
+    const next = [...itemsList]
+    next[idx] = { ...next[idx], quantity: q }
+    setItemsList(next)
+  }
+
+  const handleRemoveItem = (idx: number) => {
+    const next = itemsList.filter((_, i) => i !== idx)
+    setItemsList(next)
+  }
+
   return (
     <div className="container">
       <Header title="Permintaan Pembelian" backTo="/" />
@@ -70,11 +112,11 @@ export default function PurchaseRequestPage() {
         <div className="form-grid">
           <div className="control">
             <label className="label">Tanggal PO</label>
-            <input type="date" className="input" value={date} onChange={e => setDate(e.target.value)} />
+            <input type="date" className="input" value={date} onChange={handleDateChange} />
           </div>
           <div className="control">
             <label className="label">Outlet</label>
-            <select className="select" value={outlet} onChange={e => setOutlet(e.target.value)}>
+            <select className="select" value={outlet} onChange={handleOutletChange}>
               <option value="">Pilih Outlet</option>
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
@@ -89,32 +131,29 @@ export default function PurchaseRequestPage() {
                 setSupplier(item.supplier || '')
                 setPrice(item.price || 0)
                 setPhone(item.phone || '')
-              } else {
-                // Reset fields if needed when custom name is typed
-                // For now, we keep previous values or user clears them manually
               }
             }}
           />
 
           <div className="control">
             <label className="label">Satuan</label>
-            <input className="input" placeholder="Contoh: kg, box, pcs" value={unit} onChange={e => setUnit(e.target.value)} readOnly={true} />
+            <input className="input" placeholder="Contoh: kg, box, pcs" value={unit} readOnly />
           </div>
           <div className="control">
             <label className="label">Nama Supplier</label>
-            <input className="input" value={supplier} readOnly={true} />
+            <input className="input" value={supplier} readOnly />
           </div>
           <div className="control">
             <label className="label">Harga Satuan</label>
-            <input className="input" value={price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price) : ''} readOnly={true} />
+            <input className="input" value={price ? new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price) : ''} readOnly />
           </div>
           <div className="control">
             <label className="label">Jumlah</label>
-            <input type="number" min={1} className="input" value={quantity} onChange={e => setQuantity(Number(e.target.value))} />
+            <input type="number" min={1} className="input" value={quantity} onChange={handleQuantityChange} />
           </div>
         </div>
         <div className="actions">
-          <button className="btn" onClick={() => { setItemName(''); setUnit(''); setSupplier(''); setPrice(0); setPhone(''); setQuantity(1); }}>Reset</button>
+          <button className="btn" onClick={resetForm}>Reset</button>
           <button className="btn" disabled={!itemName || !unit || quantity <= 0} onClick={addToList}>Tambah ke daftar</button>
           <button className="btn btn-primary" disabled={submitting || !date || !outlet || itemsList.length === 0} onClick={handleSubmit}>Kirim</button>
         </div>
@@ -142,16 +181,14 @@ export default function PurchaseRequestPage() {
                 <div>
                   <div className="label">Jumlah</div>
                   <div className="qty-row">
-                    <input type="number" min={1} className="input qty-input" value={it.quantity} onChange={e => {
-                      const q = Number(e.target.value) || 1
-                      const next = [...itemsList]
-                      next[idx] = { ...it, quantity: q }
-                      setItemsList(next)
-                    }} />
-                    <button className="btn" onClick={() => {
-                      const next = itemsList.filter((x, i) => i !== idx)
-                      setItemsList(next)
-                    }}>Hapus</button>
+                    <input 
+                      type="number" 
+                      min={1} 
+                      className="input qty-input" 
+                      value={it.quantity} 
+                      onChange={e => handleItemQuantityChange(idx, Number(e.target.value))} 
+                    />
+                    <button className="btn" onClick={() => handleRemoveItem(idx)}>Hapus</button>
                   </div>
                 </div>
               </div>

@@ -2,20 +2,16 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import Header from '../components/Header'
 import { formatIDR } from '../utils/format'
-import { LineItem } from '../types'
+import { LineItem, PRPayload } from '../types'
 import { buildConfirmBody, submitPO } from '../services/po'
 
 export default function ConfirmPOPage() {
   const navigate = useNavigate()
-  const { state } = useLocation() as { state?: {
-    date: string
-    outlet: string
-    items: Array<{ name: string; unit: string; quantity: number; price?: number; supplier?: string; phone?: string }>
-  } }
+  const { state } = useLocation()
+  const data = (state as PRPayload) || { date: '', outlet: '', items: [] }
   const [submitting, setSubmitting] = useState(false)
 
-  const data = state || { date: '', outlet: '', items: [] as Array<{ name: string; unit: string; quantity: number; price?: number; supplier?: string; phone?: string }> }
-  const items: LineItem[] = Array.isArray((data as any).items) ? ((data as any).items as LineItem[]) : []
+  const items: LineItem[] = data.items || []
   const headerSupplier = items[0]?.supplier || ''
   const headerPhone = items[0]?.phone || ''
 
