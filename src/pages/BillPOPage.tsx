@@ -32,11 +32,13 @@ export default function BillPOPage() {
     isOpen: boolean
     trxId: string
     outlet: string
+    invoice: string
     isSubmitting: boolean
   }>({
     isOpen: false,
     trxId: '',
     outlet: '',
+    invoice: '',
     isSubmitting: false
   })
 
@@ -116,12 +118,13 @@ export default function BillPOPage() {
     currentPage * ITEMS_PER_PAGE
   )
 
-  const handleOpenModal = (trxId: string, outletName: string) => {
+  const handleOpenModal = (trxId: string, outletName: string, invoiceNumber: string) => {
     setModalState(prev => ({
       ...prev,
       isOpen: true,
       trxId: trxId,
-      outlet: outletName
+      outlet: outletName,
+      invoice: invoiceNumber
     }))
   }
 
@@ -138,10 +141,10 @@ export default function BillPOPage() {
     setOutletFilter(e.target.value)
   }
 
-  const handleSubmitPaymentProof = async (trxId: string, file: File) => {
+  const handleSubmitPaymentProof = async (trxId: string, file: File, invoiceNumber: string) => {
     setModalState(prev => ({ ...prev, isSubmitting: true }))
     try {
-      const success = await submitPaymentProof(trxId, file, modalState.outlet)
+      const success = await submitPaymentProof(trxId, file, modalState.outlet, invoiceNumber)
       if (success) {
         alert(`Bukti pembayaran untuk ${trxId} berhasil dikirim!`)
         handleCloseModal()
@@ -180,7 +183,7 @@ export default function BillPOPage() {
             key={`${group.invoice}-${group.outlet}`}
             trxId={group.trxId}
             items={group.items}
-            onInputPaymentProof={() => handleOpenModal(group.trxId, group.outlet)}
+            onInputPaymentProof={() => handleOpenModal(group.trxId, group.outlet, group.invoice)}
             invoice={group.invoice}
           />
         ))}
@@ -227,6 +230,7 @@ export default function BillPOPage() {
         onClose={handleCloseModal}
         trxId={modalState.trxId}
         outlet={modalState.outlet}
+        invoice={modalState.invoice}
         onSubmit={handleSubmitPaymentProof}
         isLoading={modalState.isSubmitting}
       />

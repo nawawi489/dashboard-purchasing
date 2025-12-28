@@ -5,11 +5,12 @@ type Props = {
   onClose: () => void
   trxId: string
   outlet: string
-  onSubmit: (trxId: string, file: File) => void
+  invoice: string
+  onSubmit: (trxId: string, file: File, invoice: string) => void
   isLoading?: boolean
 }
 
-export default function PaymentProofModal({ isOpen, onClose, trxId, outlet, onSubmit, isLoading = false }: Props) {
+export default function PaymentProofModal({ isOpen, onClose, trxId, outlet, invoice, onSubmit, isLoading = false }: Props) {
   const [file, setFile] = useState<File | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [error, setError] = useState('')
@@ -56,7 +57,7 @@ export default function PaymentProofModal({ isOpen, onClose, trxId, outlet, onSu
       setError('Mohon pilih file bukti pembayaran')
       return
     }
-    onSubmit(trxId, file)
+    onSubmit(trxId, file, invoice)
   }
 
   return (
@@ -95,6 +96,17 @@ export default function PaymentProofModal({ isOpen, onClose, trxId, outlet, onSu
               value={outlet} 
               readOnly 
               style={{ backgroundColor: '#f5f5f5' }} 
+            />
+          </div>
+
+          <div className="control">
+            <label className="label">Nomor Invoice</label>
+            <input
+              type="text"
+              className="input"
+              value={invoice}
+              readOnly
+              style={{ backgroundColor: '#f5f5f5' }}
             />
           </div>
 

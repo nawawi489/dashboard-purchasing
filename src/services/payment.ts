@@ -1,10 +1,11 @@
 import { WEBHOOK_PAYMENT_PROOF } from '../config'
 
-export async function submitPaymentProof(trxId: string, file: File, outlet: string): Promise<boolean> {
+export async function submitPaymentProof(trxId: string, file: File, outlet: string, nomorInvoice?: string): Promise<boolean> {
   const formData = new FormData()
   formData.append('trxId', trxId)
   formData.append('outlet', outlet)
   formData.append('file', file)
+  if (nomorInvoice) formData.append('nomorInvoice', nomorInvoice)
 
   try {
     const response = await fetch(WEBHOOK_PAYMENT_PROOF, {
