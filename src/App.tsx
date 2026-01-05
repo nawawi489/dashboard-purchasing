@@ -3,7 +3,6 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import LoginPage from './pages/LoginPage'
 import { HomePage } from './pages/HomePage'
 import PurchaseRequestPage from './pages/PurchaseRequestPage'
-import ManualPurchaseRequestPage from './pages/ManualPurchaseRequestPage'
 import VendorPage from './pages/VendorPage'
 import ApprovalPage from './pages/ApprovalPage'
 import PlafonPage from './pages/PlafonPage'
@@ -39,7 +38,6 @@ export default function App() {
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/pr" element={<PurchaseRequestPage />} />
-          <Route path="/pr/manual" element={<ManualPurchaseRequestPage />} />
           <Route path="/vendor" element={<VendorPage />} />
           <Route path="/approval" element={<ApprovalPage />} />
           {/* <Route path="/plafon" element={<PlafonPage />} /> */}

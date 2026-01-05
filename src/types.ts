@@ -1,4 +1,5 @@
 export type LineItem = {
+  id?: string
   name: string
   unit: string
   quantity: number
@@ -34,6 +35,7 @@ export type ApprovalItem = {
 }
 
 export type ItemRow = {
+  id?: string
   name: string
   unit: string
   supplier?: string
@@ -50,11 +52,27 @@ export type POWebhookPayload = {
   'Grand Total': number
   Status: string
   Items: Array<{
+    'ID BARANG': string
     'Nama Barang': string
     SATUAN: string
     JUMLAH: number
     Harga: number
     Subtotal: number
   }>
+}
+
+export type FlatPOPayload = {
+  version: string
+  'Tanggal PO': string
+  Outlet: string
+  'Nama Supplier': string
+  'Nomor WhatsApp': string
+  'ID BARANG': string
+  'Nama Barang': string
+  SATUAN: string
+  JUMLAH: number
+  Harga: number
+  Subtotal: number
+  Status: string
 }
 

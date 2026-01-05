@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useState } from 'react'
+import { Minus, Plus, Trash2 } from 'lucide-react'
 import Header from '../components/Header'
 import ItemSearchDropdown from '../components/ItemSearchDropdown'
 import { OUTLETS } from '../constants'
@@ -11,6 +12,7 @@ export default function PurchaseRequestPage() {
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0,10))
   const [outlet, setOutlet] = useState<string>('')
+  const [itemId, setItemId] = useState<string>('')
   const [itemName, setItemName] = useState<string>('')
   const [unit, setUnit] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
@@ -21,6 +23,7 @@ export default function PurchaseRequestPage() {
   const [itemsList, setItemsList] = useState<LineItem[]>([])
 
   const resetForm = () => {
+    setItemId('')
     setItemName('')
     setUnit('')
     setSupplier('')
@@ -32,14 +35,8 @@ export default function PurchaseRequestPage() {
   const addToList = () => {
     if (!itemName || !unit || quantity <= 0) return
     const currentSupplier = supplier || ''
-    if (itemsList.length > 0) {
-      const headerSupplier = itemsList[0].supplier || ''
-      if (headerSupplier && currentSupplier && headerSupplier !== currentSupplier) {
-        alert('Barang dari supplier berbeda akan dibuat PO terpisah. Tambahkan hanya dari satu supplier.')
-        return
-      }
-    }
-    const idx = itemsList.findIndex(it => it.name === itemName && it.unit === unit)
+    
+    const idx = itemsList.findIndex(it => it.name === itemName && it.unit === unit && it.supplier === currentSupplier)
     if (idx >= 0) {
       const next = [...itemsList]
       const prev = next[idx]
@@ -53,6 +50,7 @@ export default function PurchaseRequestPage() {
       setItemsList(next)
     } else {
       setItemsList([...itemsList, { 
+        id: itemId,
         name: itemName, 
         unit, 
         quantity, 
@@ -63,6 +61,14 @@ export default function PurchaseRequestPage() {
     }
     resetForm()
   }
+
+  // Group items by supplier
+  const groupedItems = itemsList.reduce((acc, item) => {
+    const key = item.supplier || 'Tanpa Supplier'
+    if (!acc[key]) acc[key] = []
+    acc[key].push(item)
+    return acc
+  }, {} as Record<string, LineItem[]>)
 
   const handleSubmit = async () => {
     if (!date || !outlet) return
@@ -127,6 +133,7 @@ export default function PurchaseRequestPage() {
             onChange={(item, name) => {
               setItemName(name)
               if (item) {
+                setItemId(item.id || '')
                 setUnit(item.unit)
                 setSupplier(item.supplier || '')
                 setPrice(item.price || 0)
@@ -159,42 +166,66 @@ export default function PurchaseRequestPage() {
         </div>
       </section>
 
-      <div style={{ marginTop: 12, textAlign: 'center', fontSize: 14, color: 'var(--muted)' }}>
-        Jika tidak menemukan barang yang dicari, silakan <Link to="/pr/manual" style={{ color: 'var(--primary)', textDecoration: 'underline' }}>isi form kosong</Link>.
-      </div>
-
-      <section className="panel" style={{ marginTop: 12 }}>
-        <div className="form-grid">
-          {itemsList.length === 0 ? (
-            <div className="dropdown-empty">Belum ada barang dalam daftar</div>
-          ) : (
-            itemsList.map((it, idx) => (
-              <div key={it.name + it.unit} className="control line-row-3">
-                <div>
-                  <div className="label">Nama Barang</div>
-                  <div>{it.name}</div>
-                </div>
-                <div>
-                  <div className="label">Satuan</div>
-                  <div>{it.unit}</div>
-                </div>
-                <div>
-                  <div className="label">Jumlah</div>
-                  <div className="qty-row">
-                    <input 
-                      type="number" 
-                      min={1} 
-                      className="input qty-input" 
-                      value={it.quantity} 
-                      onChange={e => handleItemQuantityChange(idx, Number(e.target.value))} 
-                    />
-                    <button className="btn" onClick={() => handleRemoveItem(idx)}>Hapus</button>
-                  </div>
-                </div>
-              </div>
-            ))
-          )}
-        </div>
+      <section className="panel" style={{ marginTop: 12, backgroundColor: 'transparent', boxShadow: 'none', border: 'none', padding: 0 }}>
+        {itemsList.length === 0 ? (
+          <div className="panel dropdown-empty">Belum ada barang dalam daftar</div>
+        ) : (
+          Object.entries(groupedItems).map(([supplierName, items]) => (
+            <div key={supplierName} className="panel" style={{ marginBottom: 16 }}>
+              <div style={{ fontWeight: 'bold', marginBottom: 12, fontSize: '1.1rem' }}>{supplierName}</div>
+              {items.map((it, idx) => {
+                // Find original index in itemsList for updates
+                const originalIdx = itemsList.indexOf(it)
+                return (
+                   <div key={idx} style={{ marginBottom: 12, borderBottom: '1px solid #eee', paddingBottom: 12 }}>
+                     <div style={{ fontWeight: 'bold', fontSize: '1.1rem', marginBottom: 8 }}>{it.name}</div>
+                     
+                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                       <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+                         <div style={{ fontSize: '0.9rem', color: '#666' }}>{it.id || '-'}</div>
+                         <div style={{ fontSize: '0.9rem', color: '#666' }}>{it.unit}</div>
+                       </div>
+                       
+                       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                         <button 
+                           className="btn" 
+                           style={{ padding: 8, minWidth: 32, display: 'grid', placeItems: 'center' }}
+                           onClick={() => handleItemQuantityChange(originalIdx, it.quantity - 1)}
+                           disabled={it.quantity <= 1}
+                         >
+                           <Minus size={16} />
+                         </button>
+                         <input 
+                           type="number" 
+                           min={1} 
+                           style={{ width: 60, textAlign: 'center', padding: '4px', border: '1px solid #ccc', borderRadius: 4 }}
+                           value={it.quantity} 
+                           onChange={e => handleItemQuantityChange(originalIdx, Number(e.target.value))} 
+                         />
+                         <button 
+                           className="btn" 
+                           style={{ padding: 8, minWidth: 32, display: 'grid', placeItems: 'center' }}
+                           onClick={() => handleItemQuantityChange(originalIdx, it.quantity + 1)}
+                         >
+                           <Plus size={16} />
+                         </button>
+                         <div style={{ borderLeft: '1px solid #ccc', height: 24, margin: '0 8px' }}></div>
+                          <button 
+                            className="btn" 
+                            style={{ color: 'red', borderColor: 'red', padding: 8, minWidth: 32, display: 'grid', placeItems: 'center' }} 
+                            onClick={() => handleRemoveItem(originalIdx)}
+                            title="Hapus"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                       </div>
+                     </div>
+                   </div>
+                 )
+              })}
+            </div>
+          ))
+        )}
       </section>
     </div>
   )

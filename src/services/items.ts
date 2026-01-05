@@ -21,6 +21,7 @@ export async function fetchItems(): Promise<ItemRow[]> {
     if (!Array.isArray(list)) return []
 
     const mapped: ItemRow[] = list.map((row: any) => ({
+      id: normalizeText(row['ID BARANG'] ?? row.id ?? row.itemId),
       name: normalizeText(row.Barang ?? row.item_name ?? row.nama_barang ?? row.item),
       unit: normalizeText(row.Satuan ?? row.unit ?? row.satuan),
       supplier: normalizeText(row['Nama Supplier'] ?? row.supplier),
