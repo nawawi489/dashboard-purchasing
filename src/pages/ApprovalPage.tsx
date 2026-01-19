@@ -13,18 +13,34 @@ export default function ApprovalPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [outlet, setOutlet] = useState('')
+  
+  // Cache data per outlet untuk menghindari request berulang
+  const [dataCache, setDataCache] = useState<Record<string, ApprovalItem[]>>({})
+
   const [status, setStatus] = useState('')
   const [sort, setSort] = useState<SortOrder>('desc')
   const [page, setPage] = useState(1)
   const pageSize = 8
 
-  const loadData = async () => {
+  const loadData = async (forceRefresh = false) => {
+    // Jika data sudah ada di cache dan tidak dipaksa refresh, gunakan cache
+    if (!forceRefresh && dataCache[outlet] !== undefined) {
+      setItems(dataCache[outlet])
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
       // Pass outlet ke API untuk server-side filtering
       const data = await fetchApprovalItems(outlet)
       setItems(data)
+      
+      // Simpan ke cache
+      setDataCache(prev => ({
+        ...prev,
+        [outlet]: data
+      }))
     } catch (e) {
       setError('Tidak dapat memuat data approval')
     } finally {

@@ -24,6 +24,9 @@ export default function BillPOPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
+  // Cache data per outlet
+  const [dataCache, setDataCache] = useState<Record<string, ApprovalItem[]>>({})
+  
   // UI State
   const [outletFilter, setOutletFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
@@ -43,13 +46,25 @@ export default function BillPOPage() {
     isSubmitting: false
   })
 
-  const loadData = async () => {
+  const loadData = async (forceRefresh = false) => {
+    // Cek cache dulu
+    if (!forceRefresh && dataCache[outletFilter] !== undefined) {
+      setItems(dataCache[outletFilter])
+      return
+    }
+
     setLoading(true)
     setError(null)
     try {
       // Pass outletFilter ke API untuk server-side filtering
       const data = await fetchApprovalItems(outletFilter)
       setItems(data)
+      
+      // Update cache
+      setDataCache(prev => ({
+        ...prev,
+        [outletFilter]: data
+      }))
     } catch (e) {
       setError('Tidak dapat memuat data tagihan')
     } finally {
