@@ -6,6 +6,7 @@ import PaymentProofModal from '../components/PaymentProofModal'
 import { fetchApprovalItems } from '../services/approval'
 import { submitPaymentProof } from '../services/payment'
 import { ApprovalItem } from '../types'
+import { OUTLETS } from '../constants'
 
 interface BillGroup {
   invoice: string
@@ -46,7 +47,8 @@ export default function BillPOPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchApprovalItems()
+      // Pass outletFilter ke API untuk server-side filtering
+      const data = await fetchApprovalItems(outletFilter)
       setItems(data)
     } catch (e) {
       setError('Tidak dapat memuat data tagihan')
@@ -57,17 +59,12 @@ export default function BillPOPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
+  }, [outletFilter]) // Refetch saat filter berubah
 
   // Reset page when filter changes
   useEffect(() => {
     setCurrentPage(1)
   }, [outletFilter])
-
-  const outlets = useMemo(() => {
-    const set = new Set(items.map(i => i.outlet).filter(Boolean))
-    return Array.from(set).sort()
-  }, [items])
 
   // Group items by nomorInvoice AND outlet
   const groupedItems = useMemo<BillGroup[]>(() => {
@@ -215,7 +212,7 @@ export default function BillPOPage() {
               onChange={handleOutletFilterChange}
             >
               <option value="">Semua Outlet</option>
-              {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
+              {OUTLETS.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
         </div>

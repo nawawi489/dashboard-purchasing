@@ -4,6 +4,7 @@ import ApprovalCard from '../components/ApprovalCard'
 import Pagination from '../components/Pagination'
 import { fetchApprovalItems } from '../services/approval'
 import { ApprovalItem } from '../types'
+import { OUTLETS } from '../constants'
 
 type SortOrder = 'desc' | 'asc'
 
@@ -21,7 +22,8 @@ export default function ApprovalPage() {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchApprovalItems()
+      // Pass outlet ke API untuk server-side filtering
+      const data = await fetchApprovalItems(outlet)
       setItems(data)
     } catch (e) {
       setError('Tidak dapat memuat data approval')
@@ -32,17 +34,14 @@ export default function ApprovalPage() {
 
   useEffect(() => {
     loadData()
-  }, [])
-
-  const outlets = useMemo(() => {
-    const set = new Set(items.map(i => i.outlet).filter(Boolean))
-    return Array.from(set)
-  }, [items])
+  }, [outlet]) // Refetch saat outlet berubah
 
   const filtered = useMemo(() => {
     // Filter hanya yang VerifikasiSPV = false
     let base = items.filter(i => i.verifikasiSpv === false)
     
+    // Client-side filter masih berguna jika API mengembalikan semua data saat outlet=''
+    // atau untuk memastikan data benar-benar sesuai
     if (outlet) base = base.filter(i => i.outlet === outlet)
     if (status) base = base.filter(i => i.status === status)
     return base
@@ -90,7 +89,7 @@ export default function ApprovalPage() {
             <label className="label">Filter Outlet</label>
             <select className="select" value={outlet} onChange={handleOutletChange}>
               <option value="">Semua Outlet</option>
-              {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
+              {OUTLETS.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
           <div className="control">

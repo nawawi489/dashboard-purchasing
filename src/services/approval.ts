@@ -4,9 +4,14 @@ import { ApprovalItem, ApprovalStatus } from '../types'
 
 export { type ApprovalItem, type ApprovalStatus }
 
-export async function fetchApprovalItems(): Promise<ApprovalItem[]> {
+export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[]> {
   try {
-    const res = await fetch(WEBHOOK_LIST_PO, { 
+    let url = WEBHOOK_LIST_PO
+    const separator = url.includes('?') ? '&' : '?'
+    // Selalu kirim parameter outlet, meskipun kosong, agar sesuai dengan logic Switch di n8n
+    url = `${url}${separator}outlet=${encodeURIComponent(outlet || '')}`
+
+    const res = await fetch(url, { 
       headers: { Accept: 'application/json' }, 
       cache: 'no-store' 
     })
@@ -15,7 +20,17 @@ export async function fetchApprovalItems(): Promise<ApprovalItem[]> {
       throw new Error(`Fetch failed: ${res.status} ${res.statusText}`)
     }
 
-    const data = await res.json()
+    const text = await res.text()
+    if (!text) return []
+
+    let data
+    try {
+      data = JSON.parse(text)
+    } catch (e) {
+      console.error('Invalid JSON from n8n:', text)
+      return []
+    }
+
     const list = Array.isArray(data) ? data : (data?.data || data?.items || [])
     
     // Mapping data flat dari n8n (output workflow Get List PO)
