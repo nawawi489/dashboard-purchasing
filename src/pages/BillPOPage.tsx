@@ -179,7 +179,7 @@ export default function BillPOPage() {
       return (
         <div className="dropdown-empty" style={{ gridColumn: '1 / -1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
           <div style={{ marginBottom: 12, color: 'red' }}>{error}</div>
-          <button className="btn" onClick={loadData}>Refresh Data</button>
+          <button className="btn" onClick={() => loadData(true)}>Refresh Data</button>
         </div>
       )
     }
