@@ -14,8 +14,19 @@ import StrukPage from './pages/StrukPage'
 import Footer from './components/Footer'
 
 function ProtectedLayout() {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isInitialized } = useAuth()
   const location = useLocation()
+
+  if (!isInitialized) {
+    return (
+      <div className="container">
+        <section className="hero">
+          <h1>Memuat sesi</h1>
+          <p>Harap tunggu sebentar…</p>
+        </section>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" state={{ from: location }} replace />

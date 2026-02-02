@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (username: string) => void
   logout: () => void
   user: string | null
+  isInitialized: boolean
 }
 
 const AuthContext = createContext<AuthContextType | null>(null)
@@ -15,6 +16,7 @@ const AuthContext = createContext<AuthContextType | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [user, setUser] = useState<string | null>(null)
+   const [isInitialized, setIsInitialized] = useState<boolean>(false)
 
   const logout = useCallback(() => {
     localStorage.removeItem('auth_token')
@@ -40,37 +42,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [logout])
 
   useEffect(() => {
-    const checkAuth = () => {
-      const token = localStorage.getItem('auth_token')
-      const expiry = localStorage.getItem('auth_expiry')
-      const username = localStorage.getItem('auth_user')
+    let timer: number | undefined
 
-      if (token && expiry && username) {
-        const remainingTime = Number(expiry) - Date.now()
-        if (remainingTime > 0) {
-          setIsAuthenticated(true)
-          setUser(username)
-          
-          // Set timer untuk auto logout saat sesi habis
-          const timer = setTimeout(() => {
-            logout()
-          }, remainingTime)
-          
-          return () => clearTimeout(timer)
-        } else {
+    const token = localStorage.getItem('auth_token')
+    const expiry = localStorage.getItem('auth_expiry')
+    const username = localStorage.getItem('auth_user')
+
+    if (token && expiry && username) {
+      const remainingTime = Number(expiry) - Date.now()
+      if (remainingTime > 0) {
+        setIsAuthenticated(true)
+        setUser(username)
+        timer = window.setTimeout(() => {
           logout()
-        }
+        }, remainingTime)
       } else {
-        setIsAuthenticated(false)
-        setUser(null)
+        logout()
       }
+    } else {
+      setIsAuthenticated(false)
+      setUser(null)
     }
 
-    return checkAuth()
+    setIsInitialized(true)
+
+    return () => {
+      if (timer !== undefined) {
+        clearTimeout(timer)
+      }
+    }
   }, [logout])
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, login, logout, user }}>
+    <AuthContext.Provider value={{ isAuthenticated, login, logout, user, isInitialized }}>
       {children}
     </AuthContext.Provider>
   )

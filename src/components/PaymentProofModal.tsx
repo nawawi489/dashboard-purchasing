@@ -89,9 +89,11 @@ export default function PaymentProofModal({
         bottom: 0,
         backgroundColor: 'rgba(0, 0, 0, 0.5)',
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
         zIndex: 1000,
+        overflowY: 'auto',
+        padding: '16px 8px',
       }}
     >
       <div
@@ -100,6 +102,8 @@ export default function PaymentProofModal({
           width: '100%',
           maxWidth: variant === 'struk' ? '760px' : '400px',
           margin: '20px',
+          maxHeight: '100%',
+          overflowY: 'auto',
         }}
       >
         <h2 style={{ marginTop: 0, marginBottom: '20px' }}>
