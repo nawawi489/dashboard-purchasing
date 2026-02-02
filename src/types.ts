@@ -32,6 +32,10 @@ export type ApprovalItem = {
   statusPembayaran?: string
   grandTotal?: number
   nomorInvoice?: string
+  hargaKonversiResep?: number
+  satuanKonversiResep?: string
+  jumlahKonversiResep?: number
+  inputKaspin?: boolean
 }
 
 export type ItemRow = {
@@ -75,4 +79,3 @@ export type FlatPOPayload = {
   Subtotal: number
   Status: string
 }
-

@@ -6,9 +6,10 @@ type Props = {
   invoice?: string
   items: ApprovalItem[]
   onInputPaymentProof?: () => void
+  ctaLabel?: string
 }
 
-export default function BillCard({ trxId, items, onInputPaymentProof }: Props) {
+export default function BillCard({ trxId, items, onInputPaymentProof, ctaLabel = 'Input Bukti Pembayaran' }: Props) {
   const headerItem = items[0]
   const totalAmount = headerItem.grandTotal || items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
@@ -68,7 +69,7 @@ export default function BillCard({ trxId, items, onInputPaymentProof }: Props) {
               <path d="M9 11L12 8 15 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               <path d="M8 16H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            Input Bukti Pembayaran
+            {ctaLabel}
           </button>
         </div>
       </div>

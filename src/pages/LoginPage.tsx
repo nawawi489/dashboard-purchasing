@@ -18,23 +18,25 @@ export default function LoginPage() {
       return
     }
 
-    const validUser = import.meta.env.VITE_AUTH_USERNAME
-    const validPass = import.meta.env.VITE_AUTH_PASSWORD
+    const inputUser = username.trim()
+    const inputPass = password.trim()
+    const validUser = (import.meta.env.VITE_AUTH_USERNAME || '').trim()
+    const validPass = (import.meta.env.VITE_AUTH_PASSWORD || '').trim()
 
     console.log('Login Debug:', {
-      inputUser: username,
-      inputPass: password,
+      inputUser,
+      inputPass,
       envUser: validUser,
       envPass: validPass,
       env: import.meta.env
     })
 
-    if (username !== validUser || password !== validPass) {
+    if (inputUser !== validUser || inputPass !== validPass) {
       setError('Username atau password salah')
       return
     }
     
-    login(username)
+    login(inputUser)
     navigate('/')
   }
 

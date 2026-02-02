@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react'
 import BillCard from '../components/BillCard'
 import Pagination from '../components/Pagination'
 import PaymentProofModal from '../components/PaymentProofModal'
-import { submitPaymentProof } from '../services/payment'
+import { submitStrukKaspinProof } from '../services/payment'
 import { ApprovalItem } from '../types'
 import { OUTLETS } from '../constants'
 import { useApprovalItemsWithOutletFilter } from '../hooks/useApprovalItemsWithOutletFilter'
@@ -16,9 +16,9 @@ interface BillGroup {
   date?: string
 }
 
-const ITEMS_PER_PAGE = 9
+const ITEMS_PER_PAGE = 12
 
-export default function BillPOPage() {
+export default function StrukPage() {
   const {
     items,
     loading,
@@ -26,7 +26,7 @@ export default function BillPOPage() {
     outletFilter,
     setOutletFilter,
     loadData,
-  } = useApprovalItemsWithOutletFilter('Tidak dapat memuat data tagihan')
+  } = useApprovalItemsWithOutletFilter('Tidak dapat memuat data struk')
 
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -37,49 +37,39 @@ export default function BillPOPage() {
     outlet: string
     invoice: string
     isSubmitting: boolean
+    itemName: string
+    hargaKonversiResep?: number
+    satuanKonversiResep?: string
+    jumlahKonversiResep?: number
   }>({
     isOpen: false,
     trxId: '',
     outlet: '',
     invoice: '',
-    isSubmitting: false
+    isSubmitting: false,
+    itemName: '',
+    hargaKonversiResep: undefined,
+    satuanKonversiResep: undefined,
+    jumlahKonversiResep: undefined,
   })
 
-  // Group items by nomorInvoice AND outlet
   const groupedItems = useMemo<BillGroup[]>(() => {
-    // 1. Filter items
     const filtered = items.filter(item => {
-      const isHutang = (item.statusPembayaran || '').toLowerCase() === 'hutang'
-      const isValidStatus = ['Terima', 'Pending'].includes(item.status || '')
       const matchesOutlet = !outletFilter || item.outlet === outletFilter
       const inv = (item.nomorInvoice || '').trim()
       const hasInvoice = inv.length > 0
-      return isHutang && isValidStatus && matchesOutlet && hasInvoice
+      const isInputKaspin = item.inputKaspin === false
+      return matchesOutlet && hasInvoice && isInputKaspin
     })
 
-    // 2. Group by composite key
-    const groups: Record<string, ApprovalItem[]> = {}
-    filtered.forEach(item => {
-      const inv = (item.nomorInvoice || '').trim() || 'UNKNOWN'
-      const outlet = item.outlet || 'UNKNOWN'
-      const key = `${inv}||${outlet}`
-      
-      if (!groups[key]) groups[key] = []
-      groups[key].push(item)
-    })
-    
-    // 3. Convert to array and sort
-    return Object.entries(groups)
-      .map(([key, groupItems]) => {
-        const [invoice, outlet] = key.split('||')
-        return {
-          invoice,
-          trxId: groupItems[0]?.trxId || 'UNKNOWN',
-          outlet,
-          items: groupItems,
-          date: groupItems[0]?.date
-        }
-      })
+    return filtered
+      .map((item) => ({
+        invoice: (item.nomorInvoice || '').trim() || 'UNKNOWN',
+        trxId: item.trxId || 'UNKNOWN',
+        outlet: item.outlet || 'UNKNOWN',
+        items: [item],
+        date: item.date,
+      }))
       .sort((a, b) => {
          const da = a.date ? new Date(a.date).getTime() : 0
          const db = b.date ? new Date(b.date).getTime() : 0
@@ -94,13 +84,17 @@ export default function BillPOPage() {
     currentPage * ITEMS_PER_PAGE
   )
 
-  const handleOpenModal = (trxId: string, outletName: string, invoiceNumber: string) => {
+  const handleOpenModal = (item: ApprovalItem) => {
     setModalState(prev => ({
       ...prev,
       isOpen: true,
-      trxId: trxId,
-      outlet: outletName,
-      invoice: invoiceNumber
+      trxId: item.trxId,
+      outlet: item.outlet,
+      invoice: item.nomorInvoice || '',
+      itemName: item.itemName,
+      hargaKonversiResep: item.hargaKonversiResep,
+      satuanKonversiResep: item.satuanKonversiResep,
+      jumlahKonversiResep: item.jumlahKonversiResep,
     }))
   }
 
@@ -109,7 +103,8 @@ export default function BillPOPage() {
       ...prev,
       isOpen: false,
       trxId: '',
-      outlet: ''
+      outlet: '',
+      itemName: '',
     }))
   }
 
@@ -121,15 +116,20 @@ export default function BillPOPage() {
   const handleSubmitPaymentProof = async (trxId: string, file: File, invoiceNumber: string) => {
     setModalState(prev => ({ ...prev, isSubmitting: true }))
     try {
-      const success = await submitPaymentProof(trxId, file, modalState.outlet, invoiceNumber)
+      const success = await submitStrukKaspinProof(trxId, file, modalState.outlet, invoiceNumber, {
+        itemName: modalState.itemName,
+        hargaKonversiResep: modalState.hargaKonversiResep,
+        jumlahKonversiResep: modalState.jumlahKonversiResep,
+        satuanKonversiResep: modalState.satuanKonversiResep,
+      })
       if (success) {
-        alert(`Bukti pembayaran untuk ${trxId} berhasil dikirim!`)
+        alert(`Bukti struk untuk ${trxId} berhasil dikirim!`)
         handleCloseModal()
         // Optional: Refresh data to reflect changes if needed
         // loadData() 
       }
     } catch (e) {
-      alert('Gagal mengirim bukti pembayaran. Silakan coba lagi.')
+      alert('Gagal mengirim bukti struk. Silakan coba lagi.')
     } finally {
       setModalState(prev => ({ ...prev, isSubmitting: false }))
     }
@@ -150,37 +150,35 @@ export default function BillPOPage() {
     }
 
     if (groupedItems.length === 0) {
-      return <div className="dropdown-empty">Tidak ada data tagihan</div>
+      return <div className="dropdown-empty">Tidak ada data struk yang perlu diinput</div>
     }
 
     return (
       <>
-        {paginatedItems.map((group) => (
-          <BillCard
-            key={`${group.invoice}-${group.outlet}`}
-            trxId={group.trxId}
-            items={group.items}
-            onInputPaymentProof={() => handleOpenModal(group.trxId, group.outlet, group.invoice)}
-            invoice={group.invoice}
-            ctaLabel="Input Bukti Pembayaran"
-          />
-        ))}
-        
-        <Pagination 
-          currentPage={currentPage} 
-          totalPages={totalPages} 
-          onPageChange={setCurrentPage} 
-        />
+        {paginatedItems.map((group) => {
+          const item = group.items[0]
+          return (
+            <BillCard
+              key={`${group.trxId}-${group.outlet}-${group.invoice}-${item?.itemId || 'item'}`}
+              trxId={group.trxId}
+              items={group.items}
+              onInputPaymentProof={() => handleOpenModal(item)}
+              invoice={group.invoice}
+              ctaLabel="Input Struk Pembelian"
+            />
+          )
+        })}
       </>
     )
   }
 
   return (
     <div className="container">
-      <Header title="Tagihan PO" backTo="/" />
+      <Header title="Input Struk" backTo="/" />
+
       <section className="hero">
-        <h1>Tagihan PO</h1>
-        <p>Input bukti pembayaran tagihan PO</p>
+        <h1>Input Struk</h1>
+        <p>Input bukti struk pembelian</p>
       </section>
 
       <section className="panel" style={{ marginBottom: 24 }}>
@@ -198,10 +196,18 @@ export default function BillPOPage() {
           </div>
         </div>
       </section>
-      
+
       <section className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))' }}>
         {renderContent()}
       </section>
+
+      {totalPages > 1 && (
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      )}
 
       <PaymentProofModal 
         isOpen={modalState.isOpen}
@@ -211,7 +217,11 @@ export default function BillPOPage() {
         invoice={modalState.invoice}
         onSubmit={handleSubmitPaymentProof}
         isLoading={modalState.isSubmitting}
-        variant="payment"
+        variant="struk"
+        itemName={modalState.itemName}
+        hargaKonversiResep={modalState.hargaKonversiResep}
+        satuanKonversiResep={modalState.satuanKonversiResep}
+        jumlahKonversiResep={modalState.jumlahKonversiResep}
       />
     </div>
   )

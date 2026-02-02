@@ -49,6 +49,27 @@ export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[
         return String(val).toLowerCase() === 'true'
       }
 
+      const hargaKonversiResepRaw =
+        row['HARGA KONVERSI RESEP'] ??
+        row['Harga Konversi Resep'] ??
+        row.hargaKonversiResep
+
+      const jumlahKonversiResepRaw =
+        row['JUMLAH KONVERSI RESEP'] ??
+        row['Jumlah Konversi Resep'] ??
+        row.jumlahKonversiResep
+
+      const satuanKonversiResepRaw =
+        row['SATUAN KONVERSI RESEP'] ??
+        row['Satuan Konversi Resep'] ??
+        row.satuanKonversiResep
+
+      const inputKaspinRaw =
+        row['INPUT KASPIN'] ??
+        row['Input Kaspin'] ??
+        row['input kaspin'] ??
+        row.inputKaspin
+
       return {
         trxId: normalizeText(row['ID TRANSAKSI'] || row.trxId || 'TRX-XXXX'),
         tag: 'PO',
@@ -65,6 +86,10 @@ export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[
         statusPembayaran: normalizeText(row['Status Pembayaran'] || row['status pembayaran'] || row['statusPembayaran'] || row.statusPembayaran || ''),
         grandTotal: normalizeNumber(row.grandTotal || 0),
         nomorInvoice: normalizeText(row['NOMOR INVOICE'] || row['Nomor Invoice'] || row.nomorInvoice || ''),
+        hargaKonversiResep: hargaKonversiResepRaw != null && hargaKonversiResepRaw !== '' ? normalizeNumber(hargaKonversiResepRaw) : undefined,
+        jumlahKonversiResep: jumlahKonversiResepRaw != null && jumlahKonversiResepRaw !== '' ? normalizeNumber(jumlahKonversiResepRaw) : undefined,
+        satuanKonversiResep: satuanKonversiResepRaw != null && satuanKonversiResepRaw !== '' ? normalizeText(satuanKonversiResepRaw) : undefined,
+        inputKaspin: inputKaspinRaw != null ? parseBool(inputKaspinRaw) : undefined,
       }
     })
   } catch (e) {
