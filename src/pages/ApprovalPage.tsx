@@ -2,8 +2,8 @@ import Header from '../components/Header'
 import { useEffect, useMemo, useState } from 'react'
 import ApprovalCard from '../components/ApprovalCard'
 import Pagination from '../components/Pagination'
-import { fetchApprovalItems } from '../services/approval'
-import { ApprovalItem } from '../types'
+import { fetchApprovalItems, submitFinanceVerification } from '../services/approval'
+import { ApprovalItem, ApprovalStatus } from '../types'
 import { OUTLETS } from '../constants'
 
 type SortOrder = 'desc' | 'asc'
@@ -20,6 +20,8 @@ export default function ApprovalPage() {
   const [status, setStatus] = useState('')
   const [sort, setSort] = useState<SortOrder>('desc')
   const [page, setPage] = useState(1)
+  const [submitting, setSubmitting] = useState<Record<string, boolean>>({})
+  const [acceptedKeys, setAcceptedKeys] = useState<Record<string, boolean>>({})
   const pageSize = 8
 
   const loadData = async (forceRefresh = false) => {
@@ -53,15 +55,21 @@ export default function ApprovalPage() {
   }, [outlet]) // Refetch saat outlet berubah
 
   const filtered = useMemo(() => {
-    // Filter hanya yang VerifikasiSPV = false
-    let base = items.filter(i => i.verifikasiSpv === false)
+    // Filter data yang VerifikasiFinance = Pending (VerifikasiSPV diabaikan)
+    let base = items.filter(i => {
+      const key = `${i.trxId}||${i.itemId}`
+      return i.status === 'Pending' || acceptedKeys[key]
+    })
     
     // Client-side filter masih berguna jika API mengembalikan semua data saat outlet=''
     // atau untuk memastikan data benar-benar sesuai
     if (outlet) base = base.filter(i => i.outlet === outlet)
-    if (status) base = base.filter(i => i.status === status)
+    
+    // Hapus filter status dari UI karena sudah difilter di awal (hanya 'Pending')
+    // Tapi jika user ingin filter lagi (misal status pembayaran), bisa ditambahkan logic lain
+    
     return base
-  }, [items, outlet, status])
+  }, [items, outlet, acceptedKeys])
 
   const sorted = useMemo(() => {
     const toTime = (d?: string) => (d ? new Date(d).getTime() || 0 : 0)
@@ -92,6 +100,42 @@ export default function ApprovalPage() {
     setPage(1)
   }
 
+  const handleAccept = async (item: ApprovalItem) => {
+    if (!item.trxId || !item.itemId || !item.outlet) {
+      alert('Data tidak lengkap untuk verifikasi finance')
+      return
+    }
+
+    const key = `${item.trxId}||${item.itemId}`
+    setSubmitting(prev => ({ ...prev, [key]: true }))
+    try {
+      await submitFinanceVerification({
+        trxId: item.trxId,
+        itemId: item.itemId,
+        outlet: item.outlet,
+        nomorInvoice: item.nomorInvoice || '',
+      })
+      setAcceptedKeys(prev => ({ ...prev, [key]: true }))
+      setItems(prev => {
+        const next = prev.map(it =>
+          it.trxId === item.trxId && it.itemId === item.itemId
+            ? { ...it, status: 'Terima' as ApprovalStatus }
+            : it
+        )
+        setDataCache(cache => ({
+          ...cache,
+          [outlet]: next
+        }))
+        return next
+      })
+      alert('Verifikasi finance berhasil dikirim')
+    } catch (e) {
+      alert('Gagal mengirim verifikasi finance')
+    } finally {
+      setSubmitting(prev => ({ ...prev, [key]: false }))
+    }
+  }
+
   return (
     <div className="container">
       <Header title="Approval" backTo="/" />
@@ -108,15 +152,7 @@ export default function ApprovalPage() {
               {OUTLETS.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
-          <div className="control">
-            <label className="label">Filter Status</label>
-            <select className="select" value={status} onChange={handleStatusChange}>
-              <option value="">Semua Status</option>
-              <option value="Terima">Terima</option>
-              <option value="Tolak">Tolak</option>
-              <option value="Pending">Pending</option>
-            </select>
-          </div>
+          {/* Filter Status dihapus karena data sudah difilter: Finance=Pending (VerifikasiSPV diabaikan) */}
           <div className="control">
             <label className="label">Urutkan Tanggal</label>
             <select className="select" value={sort} onChange={handleSortChange}>
@@ -151,6 +187,9 @@ export default function ApprovalPage() {
               quantity={i.quantity}
               price={i.price}
               status={i.status}
+              onAccept={() => handleAccept(i)}
+              isSubmitting={submitting[`${i.trxId}||${i.itemId}`]}
+              isAccepted={acceptedKeys[`${i.trxId}||${i.itemId}`] || i.status === 'Terima'}
             />
           ))
         )}

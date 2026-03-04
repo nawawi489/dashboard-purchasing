@@ -1,8 +1,15 @@
 import { normalizeNumber, normalizeText } from '../utils/format'
-import { WEBHOOK_LIST_PO } from '../config'
+import { WEBHOOK_FINANCE_VERIF_PO, WEBHOOK_LIST_PO } from '../config'
 import { ApprovalItem, ApprovalStatus } from '../types'
 
 export { type ApprovalItem, type ApprovalStatus }
+
+type FinanceVerifPayload = {
+  trxId: string
+  itemId: string
+  outlet: string
+  nomorInvoice: string
+}
 
 export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[]> {
   try {
@@ -32,21 +39,26 @@ export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[
     }
 
     const list = Array.isArray(data) ? data : (data?.data || data?.items || [])
-    
+
     // Mapping data flat dari n8n (output workflow Get List PO)
     return list.map((row: any): ApprovalItem => {
       // Helper untuk parsing status
       const parseStatus = (val: any): ApprovalStatus => {
-        const str = String(val || '').toLowerCase().trim()
-        if (str === 'terima' || str === 'true') return 'Terima'
-        if (str === 'tolak') return 'Tolak'
+        const str = String(val || '').trim()
+        const lower = str.toLowerCase()
+        
+        if (lower === 'terima' || lower === 'true') return 'Terima'
+        if (lower === 'tolak' || lower === 'false') return 'Tolak' // Asumsi false = tolak, atau bisa jadi pending
+        if (lower === 'pending') return 'Pending'
+        
         return 'Pending'
       }
 
       // Helper untuk parsing boolean
       const parseBool = (val: any): boolean => {
         if (typeof val === 'boolean') return val
-        return String(val).toLowerCase() === 'true'
+        const str = String(val).toLowerCase().trim()
+        return str === 'true' || str === 'terima' || str === 'yes'
       }
 
       const hargaKonversiResepRaw =
@@ -82,7 +94,13 @@ export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[
         quantity: normalizeNumber(row['JUMLAH'] || row.quantity || 0),
         price: normalizeNumber(row['HARGA'] || row.price || 0),
         verifikasiSpv: parseBool(row['VerifikasiSPV'] ?? row['Verifikasi SPV'] ?? row['verifikasi spv'] ?? row.verifikasiSpv),
-        status: parseStatus(row['Verifikasi Finance'] ?? row['verifikasi finance'] ?? row['Status'] ?? row.status),
+        status: parseStatus(
+          row['VerifikasiFinance'] ??
+          row['Verifikasi Finance'] ??
+          row['verifikasi finance'] ??
+          row['Status'] ??
+          row.status
+        ),
         statusPembayaran: normalizeText(row['Status Pembayaran'] || row['status pembayaran'] || row['statusPembayaran'] || row.statusPembayaran || ''),
         grandTotal: normalizeNumber(row.grandTotal || 0),
         nomorInvoice: normalizeText(row['NOMOR INVOICE'] || row['Nomor Invoice'] || row.nomorInvoice || ''),
@@ -96,4 +114,18 @@ export async function fetchApprovalItems(outlet?: string): Promise<ApprovalItem[
     console.error('Gagal mengambil data approval', e)
     throw e
   }
+}
+
+export async function submitFinanceVerification(payload: FinanceVerifPayload): Promise<boolean> {
+  const response = await fetch(WEBHOOK_FINANCE_VERIF_PO, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(payload),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status} ${response.statusText}`)
+  }
+
+  return true
 }

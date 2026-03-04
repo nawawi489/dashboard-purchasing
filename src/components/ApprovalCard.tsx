@@ -1,17 +1,24 @@
 import { formatIDR } from '../utils/format'
 import { ApprovalItem } from '../types'
 
-type Props = ApprovalItem
+type Props = ApprovalItem & {
+  onAccept?: () => void
+  isSubmitting?: boolean
+  isAccepted?: boolean
+}
 
 export default function ApprovalCard(props: Props) {
   const total = (props.price || 0) * (props.quantity || 0)
   const statusClass = props.status === 'Terima' ? 'status-terima' : props.status === 'Tolak' ? 'status-tolak' : 'status-pending'
 
+  // Pastikan menampilkan props.status (yang berisi VerifikasiFinance dari ApprovalPage)
+  const displayStatus = props.isAccepted ? 'Terima' : (props.status || 'Pending')
+
   return (
-    <div className="approval-card">
+    <div className={`approval-card${props.isAccepted ? ' approval-card--accepted' : ''}`}>
       <div className="approval-card__header">
         <div className="approval-card__trx">#{props.trxId}</div>
-        <div className={`approval-card__tag ${statusClass}`}>{props.status}</div>
+        <div className={`approval-card__tag ${statusClass}`}>{displayStatus}</div>
       </div>
       <div className="approval-card__body">
         <div className="approval-card__title-row">
@@ -38,6 +45,16 @@ export default function ApprovalCard(props: Props) {
             <div className="label">Total Harga</div>
             <div className="approval-card__value" style={{ color: 'var(--primary)', fontWeight: 700 }}>{formatIDR(total)}</div>
           </div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 16 }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={props.onAccept}
+            disabled={!props.onAccept || props.isSubmitting || props.isAccepted}
+          >
+            {props.isSubmitting ? 'Mengirim...' : 'Terima'}
+          </button>
         </div>
       </div>
     </div>

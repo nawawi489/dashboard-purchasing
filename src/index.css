@@ -75,6 +75,9 @@ body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI
 .approval-card__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
 .approval-card__value { font-weight: 600 }
 .approval-card__footer { border-top: 1px solid var(--border); padding: 12px 16px; display: flex; justify-content: flex-start }
+.approval-card--accepted { border-color: #16a34a; }
+.approval-card--accepted .approval-card__header { background: #16a34a; }
+.approval-card--accepted .approval-card__tag { color: #16a34a; border-color: #16a34a; }
 .status-pill { border: 1px solid; border-radius: 12px; padding: 8px 12px; font-weight: 600; background: #fff }
 @media (max-width: 640px) { .approval-card__grid { grid-template-columns: 1fr } }
  .approval-card__itemid { background: #fff; border: 1px solid var(--border); border-radius: 999px; padding: 4px 8px; font-size: 12px; color: var(--muted) }

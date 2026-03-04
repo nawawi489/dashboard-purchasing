@@ -123,7 +123,7 @@ export default function StrukPage() {
         satuanKonversiResep: modalState.satuanKonversiResep,
       })
       if (success) {
-        alert(`Bukti struk untuk ${trxId} berhasil dikirim!`)
+        alert('Bukti struk berhasil diinput')
         handleCloseModal()
         // Optional: Refresh data to reflect changes if needed
         // loadData() 
