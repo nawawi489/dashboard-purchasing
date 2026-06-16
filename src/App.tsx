@@ -11,6 +11,13 @@ import ConfirmPOPage from './pages/ConfirmPOPage'
 import POSuccessPage from './pages/POSuccessPage'
 import BillPOPage from './pages/BillPOPage'
 import StrukPage from './pages/StrukPage'
+import InventoryRequestPage from './pages/InventoryRequestPage'
+import ConfirmInventoryRequestPage from './pages/ConfirmInventoryRequestPage'
+import InventoryRequestSuccessPage from './pages/InventoryRequestSuccessPage'
+import InventoryApprovalPage from './pages/InventoryApprovalPage'
+import PerlengkapanRequestPage from './pages/PerlengkapanRequestPage'
+import ConfirmPerlengkapanPage from './pages/ConfirmPerlengkapanPage'
+import PerlengkapanSuccessPage from './pages/PerlengkapanSuccessPage'
 import Footer from './components/Footer'
 
 function ProtectedLayout() {
@@ -57,6 +64,13 @@ export default function App() {
           <Route path="/struk" element={<StrukPage />} />
           <Route path="/confirm-po" element={<ConfirmPOPage />} />
           <Route path="/po-success" element={<POSuccessPage />} />
+          <Route path="/inventory-request" element={<InventoryRequestPage />} />
+            <Route path="/confirm-inventory-request" element={<ConfirmInventoryRequestPage />} />
+            <Route path="/inventory-request-success" element={<InventoryRequestSuccessPage />} />
+            <Route path="/approval-inventory" element={<InventoryApprovalPage />} />
+            <Route path="/perlengkapan" element={<PerlengkapanRequestPage />} />
+            <Route path="/confirm-perlengkapan" element={<ConfirmPerlengkapanPage />} />
+            <Route path="/perlengkapan-success" element={<PerlengkapanSuccessPage />} />
         </Route>
       </Routes>
     </AuthProvider>

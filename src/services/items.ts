@@ -1,33 +1,74 @@
 import { normalizeNumber, normalizeText } from '../utils/format'
-import { WEBHOOK_GET_BARANG } from '../config'
+import { WEBHOOK_GET_BARANG, WEBHOOK_LIST_PENGAJUAN_INVENTARIS, WEBHOOK_GET_DATABASE_PERLENGKAPAN } from '../config'
 import { ItemRow } from '../types'
 
 export type { ItemRow }
 
-const WEBHOOK_URL = WEBHOOK_GET_BARANG
+function toItemRow(row: any): ItemRow {
+  return {
+    id: normalizeText(row['ID BARANG'] ?? row.id ?? row.itemId ?? row['Item ID']),
+    name: normalizeText(
+      row.Barang ??
+      row['Nama Barang'] ??
+      row.item_name ??
+      row.nama_barang ??
+      row.item ??
+      row.name,
+    ),
+    unit: normalizeText(
+      row.Satuan ??
+      row.SATUAN ??
+      row.unit ??
+      row.satuan,
+    ),
+    supplier: normalizeText(row['Nama Supplier'] ?? row.supplier),
+    price: normalizeNumber(row.Harga ?? row.price),
+    phone: normalizeText(row['Nomor WhatsApp'] ?? row.whatsapp ?? row.phone),
+  }
+}
 
-export async function fetchItems(): Promise<ItemRow[]> {
+function toInventoryItemRow(row: any): ItemRow {
+  // Payload inventaris tidak punya field "Satuan" -> default "pcs"
+  return {
+    id: normalizeText(row['ID Peralatan'] ?? row['ID Barang'] ?? row.id),
+    name: normalizeText(row['Nama Peralatan'] ?? row['Nama Barang'] ?? row.name),
+    unit: normalizeText(row.Satuan ?? row.SATUAN ?? row.unit ?? row.satuan) || 'pcs',
+    price: normalizeNumber(row.Harga ?? row.price),
+    brand: normalizeText(row['Merk'] ?? row.merk),
+    specification: normalizeText(row['Spesifikasi/Tipe'] ?? row.spesifikasi ?? row.specification),
+  }
+}
+
+function toPerlengkapanItemRow(row: any): ItemRow {
+  return {
+    id: normalizeText(row['Kode Item'] ?? row['Kode Item'] ?? row.id),
+    name: normalizeText(row['Deskripsi Item'] ?? row['Nama Item'] ?? row.name),
+    unit: normalizeText(row['QTY Satuan'] ? 'pcs' : (row.Satuan ?? row.SATUAN ?? row.unit ?? row.satuan)) || 'pcs',
+    price: normalizeNumber(row['Harga Satuan'] ?? row.price),
+    coa: normalizeText(row.COA ?? row.coa),
+    coaDescription: normalizeText(row['Deskripsi COA'] ?? row['DeskripsiCOA'] ?? row.coaDescription),
+    category: normalizeText(row['Kategori Item'] ?? row.category),
+  }
+}
+
+export async function fetchItemsFrom(
+  url: string,
+  mapper: (row: any) => ItemRow = toItemRow,
+): Promise<ItemRow[]> {
   try {
-    const res = await fetch(WEBHOOK_URL, { 
-      headers: { Accept: 'application/json' }, 
-      cache: 'no-store' 
+    const res = await fetch(url, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
     })
-    
+
     if (!res.ok) throw new Error(`Fetch failed: ${res.status} ${res.statusText}`)
-    
+
     const data = await res.json()
     const list = Array.isArray(data) ? data : (data?.data || data?.items || [])
-    
+
     if (!Array.isArray(list)) return []
 
-    const mapped: ItemRow[] = list.map((row: any) => ({
-      id: normalizeText(row['ID BARANG'] ?? row.id ?? row.itemId),
-      name: normalizeText(row.Barang ?? row.item_name ?? row.nama_barang ?? row.item),
-      unit: normalizeText(row.Satuan ?? row.unit ?? row.satuan),
-      supplier: normalizeText(row['Nama Supplier'] ?? row.supplier),
-      price: normalizeNumber(row.Harga ?? row.price),
-      phone: normalizeText(row['Nomor WhatsApp'] ?? row.whatsapp ?? row.phone),
-    }))
+    const mapped: ItemRow[] = list.map(mapper)
 
     // Deduplicate by name
     const dedup = new Map<string, ItemRow>()
@@ -41,4 +82,16 @@ export async function fetchItems(): Promise<ItemRow[]> {
     console.error('Gagal mengambil data barang', e)
     return []
   }
+}
+
+export async function fetchItems(): Promise<ItemRow[]> {
+  return fetchItemsFrom(WEBHOOK_GET_BARANG)
+}
+
+export async function fetchInventoryRequestItems(): Promise<ItemRow[]> {
+  return fetchItemsFrom(WEBHOOK_LIST_PENGAJUAN_INVENTARIS, toInventoryItemRow)
+}
+
+export async function fetchPerlengkapanItems(): Promise<ItemRow[]> {
+  return fetchItemsFrom(WEBHOOK_GET_DATABASE_PERLENGKAPAN, toPerlengkapanItemRow)
 }

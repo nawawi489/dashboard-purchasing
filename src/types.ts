@@ -6,6 +6,11 @@ export type LineItem = {
   price?: number
   supplier?: string
   phone?: string
+  brand?: string
+  specification?: string
+  coa?: string
+  coaDescription?: string
+  category?: string
 }
 
 export type PRPayload = {
@@ -45,6 +50,11 @@ export type ItemRow = {
   supplier?: string
   price?: number
   phone?: string
+  brand?: string
+  specification?: string
+  coa?: string
+  coaDescription?: string
+  category?: string
 }
 
 export type POWebhookPayload = {
@@ -78,4 +88,32 @@ export type FlatPOPayload = {
   Harga: number
   Subtotal: number
   Status: string
+}
+
+export type InventoryApprovalStatus = 'Terima' | 'Tolak' | 'Pending'
+
+export type InventoryApprovalItem = {
+  trxId: string
+  date?: string
+  tanggalTerima?: string
+  outlet: string
+  itemId: string
+  itemName: string
+  spesifikasi?: string
+  quantity: number
+  totalEstimasiBiaya: number
+  status: InventoryApprovalStatus
+  tanggalApproval?: string
+  nominalDisetujui?: number
+  verifikasiSpv?: boolean
+  buktiDokumentasi?: string
+  verifikasiInputAset?: boolean
+}
+
+export type InventoryApprovalPayload = {
+  trxId: string
+  itemId: string
+  outlet: string
+  status: 'Terima' | 'Tolak'
+  alasan?: string
 }

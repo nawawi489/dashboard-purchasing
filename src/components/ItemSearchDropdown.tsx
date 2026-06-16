@@ -5,9 +5,10 @@ import { ItemRow } from '../types'
 type Props = {
   value: string
   onChange: (item: ItemRow | null, name: string) => void
+  fetcher?: () => Promise<ItemRow[]>
 }
 
-export default function ItemSearchDropdown({ value, onChange }: Props) {
+export default function ItemSearchDropdown({ value, onChange, fetcher }: Props) {
   const [items, setItems] = useState<ItemRow[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -20,7 +21,7 @@ export default function ItemSearchDropdown({ value, onChange }: Props) {
     setLoading(true)
     setError(null)
     try {
-      const data = await fetchItems()
+      const data = await (fetcher ? fetcher() : fetchItems())
       setItems(data)
     } catch (e) {
       console.error('Gagal mengambil data barang', e)
@@ -82,18 +83,21 @@ export default function ItemSearchDropdown({ value, onChange }: Props) {
           ) : filteredItems.length === 0 ? (
             <div className="dropdown-empty">Tidak ada hasil</div>
           ) : (
-            filteredItems.map(it => (
-              <div 
-                key={it.name} 
-                className="dropdown-item"
-                onClick={() => handleItemClick(it)}
-              >
-                <span>{it.name}</span>
-                <span style={{ color: 'var(--muted)', fontSize: 12 }}>
-                  {it.supplier || '-'}
-                </span>
-              </div>
-            ))
+            filteredItems.map(it => {
+              const meta = [it.brand, it.specification].filter(Boolean).join(' - ')
+              return (
+                <div
+                  key={it.name}
+                  className="dropdown-item"
+                  onClick={() => handleItemClick(it)}
+                >
+                  <span>{it.name}</span>
+                  <span style={{ color: 'var(--muted)', fontSize: 12 }}>
+                    {meta || it.supplier || '-'}
+                  </span>
+                </div>
+              )
+            })
           )}
         </div>
       )}
