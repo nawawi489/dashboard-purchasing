@@ -5,6 +5,8 @@ export const OUTLETS = [
   'Pizza Nyantuy Barombong',
   'Pizza Nyantuy Limbung',
   'Pizza Nyantuy Pare-Pare',
+  'Pizza Nyantuy Tamalate',
+  'Back Office'
 ] as const
 
 export type OutletName = typeof OUTLETS[number]
