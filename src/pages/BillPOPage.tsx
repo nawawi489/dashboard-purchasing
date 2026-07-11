@@ -177,7 +177,7 @@ export default function BillPOPage() {
 
   return (
     <div className="container">
-      <Header title="Tagihan PO" backTo="/" />
+      <Header title="Tagihan PO" />
       <section className="hero">
         <h1>Tagihan PO</h1>
         <p>Input bukti pembayaran tagihan PO</p>
