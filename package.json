@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build --sourcemap",
-    "preview": "vite preview"
+    "preview": "vite preview --port 4179"
   },
   "dependencies": {
     "lucide-react": "^0.562.0",

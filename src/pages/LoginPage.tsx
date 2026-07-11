@@ -56,7 +56,7 @@ export default function LoginPage() {
       }}>
         <div className="panel" style={{ width: '100%', maxWidth: '400px', padding: '32px' }}>
           <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <h1 style={{ margin: 0, fontSize: '24px', color: 'var(--primary)' }}>Dashboard Purchasing</h1>
+            <h1 style={{ margin: 0, fontSize: '24px', color: 'var(--primary)' }}>Purchasing Nyantuy Factory</h1>
             <p style={{ margin: '8px 0 0', color: 'var(--muted)' }}>Silakan login untuk melanjutkan</p>
           </div>
 
