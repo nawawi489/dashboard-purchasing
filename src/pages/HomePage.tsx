@@ -21,6 +21,7 @@ export function HomePage() {
       { key: 'bill', title: 'Tagihan PO', subtitle: 'Input bukti pembayaran tagihan PO', emoji: '🧾', href: '/bill' },
       { key: 'inventory-request', title: 'Permintaan Inventaris', subtitle: 'Ajukan kebutuhan inventaris', emoji: '📦', href: '/inventory-request' },
       { key: 'approval-inventory', title: 'Approval Permintaan Inventaris', subtitle: 'Cek & setujui pengajuan inventaris', emoji: '🗂️', href: '/approval-inventory' },
+      { key: 'bill-inventory', title: 'Tagihan Inventaris', subtitle: 'Input bukti pembayaran tagihan inventaris', emoji: '🧾', href: '/bill-inventory' },
       { key: 'perlengkapan', title: 'Permintaan Perlengkapan', subtitle: 'Ajukan kebutuhan perlengkapan', emoji: '📦', href: '/perlengkapan' },
       // { key: 'plafon', title: 'Plafon', subtitle: 'Update sisa modal belanja', emoji: '💰', href: '/plafon' },
     ],

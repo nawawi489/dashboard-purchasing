@@ -10,6 +10,7 @@ import SettingsPage from './pages/SettingsPage'
 import ConfirmPOPage from './pages/ConfirmPOPage'
 import POSuccessPage from './pages/POSuccessPage'
 import BillPOPage from './pages/BillPOPage'
+import BillInventoryPage from './pages/BillInventoryPage'
 import StrukPage from './pages/StrukPage'
 import InventoryRequestPage from './pages/InventoryRequestPage'
 import ConfirmInventoryRequestPage from './pages/ConfirmInventoryRequestPage'
@@ -68,6 +69,7 @@ export default function App() {
             <Route path="/confirm-inventory-request" element={<ConfirmInventoryRequestPage />} />
             <Route path="/inventory-request-success" element={<InventoryRequestSuccessPage />} />
             <Route path="/approval-inventory" element={<InventoryApprovalPage />} />
+            <Route path="/bill-inventory" element={<BillInventoryPage />} />
             <Route path="/perlengkapan" element={<PerlengkapanRequestPage />} />
             <Route path="/confirm-perlengkapan" element={<ConfirmPerlengkapanPage />} />
             <Route path="/perlengkapan-success" element={<PerlengkapanSuccessPage />} />

@@ -154,7 +154,9 @@ export default function InventoryApprovalPage() {
     decision: Decision,
     reason?: string,
   ) => {
-    if (!item.trxId || !item.itemId || !item.outlet) {
+    // itemId boleh kosong: item hasil input manual (bukan pilih dari database)
+    // tidak punya ID katalog, tapi trxId tetap unik per baris pengajuan.
+    if (!item.trxId || !item.outlet) {
       alert('Data tidak lengkap untuk approval inventaris')
       return
     }

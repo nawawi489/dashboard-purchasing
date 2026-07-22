@@ -11,6 +11,7 @@ export default function ConfirmInventoryRequestPage() {
   const data = (state as InventoryRequestSubmitPayload) || {
     date: '',
     outlet: '',
+    supplier: '',
     note: '',
     items: [],
   }
@@ -25,6 +26,7 @@ export default function ConfirmInventoryRequestPage() {
       const body = buildInventoryRequestBody(
         data.date,
         data.outlet,
+        data.supplier,
         data.note,
         items,
       )
@@ -67,6 +69,7 @@ export default function ConfirmInventoryRequestPage() {
         <div className="form-grid" style={{ marginBottom: 8 }}>
           <div className="control"><div className="label">Tanggal Permintaan</div><div>{data.date || '-'}</div></div>
           <div className="control"><div className="label">Outlet</div><div>{data.outlet || '-'}</div></div>
+          <div className="control"><div className="label">Nama Supplier</div><div>{data.supplier || '-'}</div></div>
         </div>
         {data.note && (
           <div className="control" style={{ marginTop: 8 }}>

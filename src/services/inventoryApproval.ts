@@ -2,6 +2,8 @@ import { normalizeNumber, normalizeText } from '../utils/format'
 import {
   WEBHOOK_APPROVE_PENGAJUAN_PERALATAN,
   WEBHOOK_LIST_PENGAJUAN_PERALATAN,
+  WEBHOOK_LIST_PENGAJUAN_PERALATAN_APPROVED,
+  WEBHOOK_PAYMENT_PROOF_INVENTORY,
 } from '../config'
 import {
   InventoryApprovalItem,
@@ -26,11 +28,12 @@ function parseBool(val: unknown): boolean {
   return str === 'true' || str === 'yes' || str === '1'
 }
 
-export async function fetchInventoryApprovalItems(
+async function fetchInventoryItemsFrom(
+  baseUrl: string,
   outlet?: string,
 ): Promise<InventoryApprovalItem[]> {
   try {
-    let url = WEBHOOK_LIST_PENGAJUAN_PERALATAN
+    let url = baseUrl
     const separator = url.includes('?') ? '&' : '?'
     url = `${url}${separator}outlet=${encodeURIComponent(outlet || '')}`
 
@@ -57,10 +60,13 @@ export async function fetchInventoryApprovalItems(
     const list = Array.isArray(data) ? data : data?.data || data?.items || []
 
     return list.map((row: any): InventoryApprovalItem => {
+      // Sheet sekarang dipisah per-outlet (di-switch oleh n8n lewat query "outlet"),
+      // jadi baris tidak lagi membawa kolom Outlet sendiri — pakai outlet yang diminta.
       const rowOutlet =
         row.outlet ||
         row.Outlet ||
         row.OUTLET ||
+        outlet ||
         '-'
       const itemIdRaw =
         row['ID Peralatan'] ||
@@ -97,6 +103,8 @@ export async function fetchInventoryApprovalItems(
             row.spesifikasi ||
             '',
         ),
+        supplier: normalizeText(row['Nama Supplier'] || row['nama supplier'] || row.supplier || ''),
+        unit: normalizeText(row['Satuan Barang'] || row['satuan barang'] || row.unit || row.satuan || ''),
         quantity: normalizeNumber(row.Qty ?? row.qty ?? row.quantity ?? 0),
         totalEstimasiBiaya: normalizeNumber(
           row['Total Estimasi Biaya'] ||
@@ -128,12 +136,31 @@ export async function fetchInventoryApprovalItems(
             row['verifikasi input aset'] ||
             row.verifikasiInputAset,
         ),
+        nomorInvoice: normalizeText(row['Nomor Invoice'] || row['nomor invoice'] || row.nomorInvoice || ''),
+        statusPembayaran: normalizeText(
+          row['Status Pembayaran'] || row['status pembayaran'] || row.statusPembayaran || '',
+        ),
+        grandTotal: normalizeNumber(
+          row['Total Tagihan'] || row['total tagihan'] || row.grandTotal || 0,
+        ) || undefined,
       }
     })
   } catch (e) {
     console.error('Gagal mengambil data approval inventaris', e)
     throw e
   }
+}
+
+export async function fetchInventoryApprovalItems(
+  outlet?: string,
+): Promise<InventoryApprovalItem[]> {
+  return fetchInventoryItemsFrom(WEBHOOK_LIST_PENGAJUAN_PERALATAN, outlet)
+}
+
+export async function fetchApprovedInventoryItems(
+  outlet?: string,
+): Promise<InventoryApprovalItem[]> {
+  return fetchInventoryItemsFrom(WEBHOOK_LIST_PENGAJUAN_PERALATAN_APPROVED, outlet)
 }
 
 export async function submitInventoryApproval(
@@ -147,6 +174,30 @@ export async function submitInventoryApproval(
 
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status} ${response.statusText}`)
+  }
+
+  return true
+}
+
+export async function submitInventoryPaymentProof(
+  trxId: string,
+  file: File,
+  outlet: string,
+  nomorInvoice?: string,
+): Promise<boolean> {
+  const formData = new FormData()
+  formData.append('trxId', trxId)
+  formData.append('outlet', outlet)
+  formData.append('file', file)
+  if (nomorInvoice !== undefined) formData.append('nomorInvoice', nomorInvoice)
+
+  const response = await fetch(WEBHOOK_PAYMENT_PROOF_INVENTORY, {
+    method: 'POST',
+    body: formData,
+  })
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}`)
   }
 
   return true

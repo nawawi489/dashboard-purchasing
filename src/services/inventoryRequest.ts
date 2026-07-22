@@ -7,6 +7,7 @@ export type InventoryRequestPayload = {
   version: string
   'Tanggal Permintaan': string
   Outlet: string
+  'Nama Supplier': string
   Keterangan: string
   Status: string
   Items: Array<{
@@ -24,6 +25,7 @@ export type InventoryRequestPayload = {
 export function buildInventoryRequestBody(
   date: string,
   outlet: string,
+  supplier: string,
   note: string,
   items: LineItem[],
 ): InventoryRequestPayload {
@@ -31,6 +33,7 @@ export function buildInventoryRequestBody(
     version: 'v1',
     'Tanggal Permintaan': date,
     Outlet: outlet,
+    'Nama Supplier': supplier,
     Keterangan: note,
     Status: 'Submitted',
     Items: items.map(it => {

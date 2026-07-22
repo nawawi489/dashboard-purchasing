@@ -15,6 +15,8 @@ export default function ItemSearchDropdown({ value, onChange, fetcher }: Props) 
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const stateRef = useRef({ open, search, value, onChange })
+  stateRef.current = { open, search, value, onChange }
 
   const loadItems = async () => {
     if (loading) return
@@ -34,6 +36,13 @@ export default function ItemSearchDropdown({ value, onChange, fetcher }: Props) 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        const { open, search, value, onChange } = stateRef.current
+        if (open) {
+          const typed = search.trim()
+          if (typed && typed !== value) {
+            onChange(null, typed)
+          }
+        }
         setOpen(false)
         setSearch('')
       }
@@ -69,7 +78,7 @@ export default function ItemSearchDropdown({ value, onChange, fetcher }: Props) 
       <label className="label">Nama Barang</label>
       <input 
         className="input" 
-        placeholder="Cari atau pilih barang"
+        placeholder="Cari barang atau input manual"
         value={open ? search : value}
         onChange={handleInputChange}
         onFocus={handleInputFocus}
