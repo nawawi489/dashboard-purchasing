@@ -10,6 +10,7 @@ export default function InventoryRequestPage() {
     outlets,
     date,
     outlet,
+    supplier,
     note,
     itemName,
     unit,
@@ -19,8 +20,11 @@ export default function InventoryRequestPage() {
     itemsList,
     handleDateChange,
     handleOutletChange,
+    handleSupplierChange,
     handleNoteChange,
     handleQuantityChange,
+    handleUnitChange,
+    handlePriceChange,
     handleItemQuantityChange,
     handleRemoveItem,
     handleSubmit,
@@ -51,6 +55,15 @@ export default function InventoryRequestPage() {
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
+          <div className="control">
+            <label className="label">Nama Supplier</label>
+            <input
+              className="input"
+              placeholder="Nama supplier"
+              value={supplier}
+              onChange={handleSupplierChange}
+            />
+          </div>
 
           <ItemSearchDropdown
             value={itemName}
@@ -60,36 +73,35 @@ export default function InventoryRequestPage() {
 
           <div className="control">
             <label className="label">Satuan</label>
-            <input className="input" placeholder="Contoh: kg, box, pcs" value={unit} readOnly />
+            <input
+              className="input"
+              placeholder="Contoh: pcs, unit, set"
+              value={unit}
+              onChange={handleUnitChange}
+            />
           </div>
           <div className="control">
             <label className="label">Jumlah</label>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input
-                type="number"
-                min={1}
-                className="input"
-                value={quantity}
-                onChange={handleQuantityChange}
-                style={{ flex: 1 }}
-              />
-              <span
-                style={{
-                  whiteSpace: 'nowrap',
-                  fontSize: '0.9rem',
-                  fontWeight: 600,
-                  color: 'var(--primary)',
-                  padding: '8px 10px',
-                  background: 'var(--primary-soft, rgba(0,0,0,0.04))',
-                  borderRadius: 6,
-                  minWidth: 110,
-                  textAlign: 'right',
-                }}
-                title="Harga Satuan"
-              >
-                {price > 0 ? formatIDR(price) : 'Harga -'}
-              </span>
-            </div>
+            <input
+              type="number"
+              min={1}
+              className="input"
+              value={quantity}
+              onChange={handleQuantityChange}
+              onWheel={e => e.currentTarget.blur()}
+            />
+          </div>
+          <div className="control">
+            <label className="label">Total Estimasi Biaya</label>
+            <input
+              type="number"
+              min={0}
+              className="input"
+              placeholder="Masukkan estimasi biaya"
+              value={price || ''}
+              onChange={handlePriceChange}
+              onWheel={e => e.currentTarget.blur()}
+            />
           </div>
           <div className="control" style={{ gridColumn: '1 / -1' }}>
             <label className="label">Keterangan</label>
@@ -126,6 +138,11 @@ export default function InventoryRequestPage() {
                   <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                     <div style={{ fontSize: '0.9rem', color: '#666' }}>{it.id || '-'}</div>
                     <div style={{ fontSize: '0.9rem', color: '#666' }}>{it.unit}</div>
+                    {!!it.price && (
+                      <div style={{ fontSize: '0.9rem', color: 'var(--primary)', fontWeight: 600 }}>
+                        {formatIDR(it.price)}
+                      </div>
+                    )}
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -143,6 +160,7 @@ export default function InventoryRequestPage() {
                       style={{ width: 60, textAlign: 'center', padding: '4px', border: '1px solid #ccc', borderRadius: 4 }}
                       value={it.quantity}
                       onChange={e => handleItemQuantityChange(idx, Number(e.target.value))}
+                      onWheel={e => e.currentTarget.blur()}
                     />
                     <button
                       className="btn"

@@ -8,6 +8,7 @@ type GroupedItems = Record<string, LineItem[]>
 export type InventoryRequestSubmitPayload = {
   date: string
   outlet: string
+  supplier: string
   note: string
   items: LineItem[]
 }
@@ -18,6 +19,7 @@ export function useInventoryRequest() {
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10))
   const [outlet, setOutlet] = useState<string>('')
+  const [supplier, setSupplier] = useState<string>('')
   const [note, setNote] = useState<string>('')
   const [itemId, setItemId] = useState<string>('')
   const [itemName, setItemName] = useState<string>('')
@@ -48,6 +50,14 @@ export function useInventoryRequest() {
       setBrand(item.brand || '')
       setSpecification(item.specification || '')
     }
+  }
+
+  const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUnit(e.target.value)
+  }
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPrice(Number(e.target.value) || 0)
   }
 
   const addToList = () => {
@@ -99,6 +109,7 @@ export function useInventoryRequest() {
     const payload: InventoryRequestSubmitPayload = {
       date,
       outlet,
+      supplier: supplier.trim(),
       note: note.trim(),
       items: itemsList,
     }
@@ -112,6 +123,10 @@ export function useInventoryRequest() {
 
   const handleOutletChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setOutlet(e.target.value)
+  }
+
+  const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSupplier(e.target.value)
   }
 
   const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -141,6 +156,7 @@ export function useInventoryRequest() {
     outlets,
     date,
     outlet,
+    supplier,
     note,
     itemName,
     unit,
@@ -151,8 +167,11 @@ export function useInventoryRequest() {
     groupedItems,
     handleDateChange,
     handleOutletChange,
+    handleSupplierChange,
     handleNoteChange,
     handleQuantityChange,
+    handleUnitChange,
+    handlePriceChange,
     handleItemQuantityChange,
     handleRemoveItem,
     handleSubmit,

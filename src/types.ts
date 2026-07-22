@@ -100,6 +100,8 @@ export type InventoryApprovalItem = {
   itemId: string
   itemName: string
   spesifikasi?: string
+  supplier?: string
+  unit?: string
   quantity: number
   totalEstimasiBiaya: number
   status: InventoryApprovalStatus
@@ -108,6 +110,9 @@ export type InventoryApprovalItem = {
   verifikasiSpv?: boolean
   buktiDokumentasi?: string
   verifikasiInputAset?: boolean
+  nomorInvoice?: string
+  statusPembayaran?: string
+  grandTotal?: number
 }
 
 export type InventoryApprovalPayload = {
