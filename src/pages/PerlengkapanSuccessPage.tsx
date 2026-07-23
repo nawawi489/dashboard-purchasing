@@ -4,7 +4,7 @@ import { formatIDR } from '../utils/format'
 
 export default function PerlengkapanSuccessPage() {
   const { state } = useLocation() as { state?: {
-    items: Array<{ name: string; unit: string; quantity: number; id?: string; price?: number; coa?: string; coaDescription?: string; category?: string }>
+    items: Array<{ name: string; unit: string; quantity: number; id?: string; price?: number }>
     outlet: string
   } }
   const data = state || { items: [], outlet: '' }
@@ -32,14 +32,6 @@ export default function PerlengkapanSuccessPage() {
               <div>
                 <div className="label">Nama Barang</div>
                 <div>{it.name}</div>
-              </div>
-              <div>
-                <div className="label">Kategori</div>
-                <div>{it.category || '-'}</div>
-              </div>
-              <div>
-                <div className="label">COA</div>
-                <div>{it.coa || '-'}</div>
               </div>
               <div>
                 <div className="label">Satuan</div>

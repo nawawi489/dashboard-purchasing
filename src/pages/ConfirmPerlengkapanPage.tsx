@@ -12,6 +12,8 @@ export default function ConfirmPerlengkapanPage() {
   const data = (state as PerlengkapanRequestSubmitPayload) || {
     date: '',
     outlet: '',
+    supplier: '',
+    note: '',
     items: [],
   }
   const [submitting, setSubmitting] = useState(false)
@@ -26,6 +28,8 @@ export default function ConfirmPerlengkapanPage() {
       const body = buildPerlengkapanRequestBody(
         data.date,
         data.outlet,
+        data.supplier,
+        data.note,
         items,
       )
 
@@ -43,9 +47,6 @@ export default function ConfirmPerlengkapanPage() {
             quantity: it.quantity,
             id: it.id,
             price: it.price,
-            coa: it.coa,
-            coaDescription: it.coaDescription,
-            category: it.category,
           })),
           outlet: data.outlet,
         },
@@ -71,7 +72,14 @@ export default function ConfirmPerlengkapanPage() {
         <div className="form-grid" style={{ marginBottom: 8 }}>
           <div className="control"><div className="label">Tanggal</div><div>{data.date || '-'}</div></div>
           <div className="control"><div className="label">Outlet</div><div>{data.outlet || '-'}</div></div>
+          <div className="control"><div className="label">Nama Supplier</div><div>{data.supplier || '-'}</div></div>
         </div>
+        {data.note && (
+          <div className="control" style={{ marginTop: 8 }}>
+            <div className="label">Catatan</div>
+            <div style={{ whiteSpace: 'pre-wrap' }}>{data.note}</div>
+          </div>
+        )}
       </section>
 
       <section className="panel" style={{ marginBottom: 16 }}>
@@ -88,14 +96,6 @@ export default function ConfirmPerlengkapanPage() {
                 <div>
                   <div className="label">Nama Barang</div>
                   <div>{it.name}</div>
-                </div>
-                <div>
-                  <div className="label">Kategori</div>
-                  <div>{it.category || '-'}</div>
-                </div>
-                <div>
-                  <div className="label">COA</div>
-                  <div>{it.coa || '-'}</div>
                 </div>
                 <div>
                   <div className="label">Satuan</div>

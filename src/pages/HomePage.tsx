@@ -23,6 +23,8 @@ export function HomePage() {
       { key: 'approval-inventory', title: 'Approval Permintaan Inventaris', subtitle: 'Cek & setujui pengajuan inventaris', emoji: '🗂️', href: '/approval-inventory' },
       { key: 'bill-inventory', title: 'Tagihan Inventaris', subtitle: 'Input bukti pembayaran tagihan inventaris', emoji: '🧾', href: '/bill-inventory' },
       { key: 'perlengkapan', title: 'Permintaan Perlengkapan', subtitle: 'Ajukan kebutuhan perlengkapan', emoji: '📦', href: '/perlengkapan' },
+      { key: 'approval-perlengkapan', title: 'Approval Permintaan Perlengkapan', subtitle: 'Cek & setujui pengajuan perlengkapan', emoji: '🗂️', href: '/approval-perlengkapan' },
+      { key: 'bill-perlengkapan', title: 'Tagihan Perlengkapan', subtitle: 'Input bukti pembayaran tagihan perlengkapan', emoji: '🧾', href: '/bill-perlengkapan' },
       // { key: 'plafon', title: 'Plafon', subtitle: 'Update sisa modal belanja', emoji: '💰', href: '/plafon' },
     ],
     [],

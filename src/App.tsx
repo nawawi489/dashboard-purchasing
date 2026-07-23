@@ -19,6 +19,8 @@ import InventoryApprovalPage from './pages/InventoryApprovalPage'
 import PerlengkapanRequestPage from './pages/PerlengkapanRequestPage'
 import ConfirmPerlengkapanPage from './pages/ConfirmPerlengkapanPage'
 import PerlengkapanSuccessPage from './pages/PerlengkapanSuccessPage'
+import PerlengkapanApprovalPage from './pages/PerlengkapanApprovalPage'
+import BillPerlengkapanPage from './pages/BillPerlengkapanPage'
 import Footer from './components/Footer'
 
 function ProtectedLayout() {
@@ -73,6 +75,8 @@ export default function App() {
             <Route path="/perlengkapan" element={<PerlengkapanRequestPage />} />
             <Route path="/confirm-perlengkapan" element={<ConfirmPerlengkapanPage />} />
             <Route path="/perlengkapan-success" element={<PerlengkapanSuccessPage />} />
+            <Route path="/approval-perlengkapan" element={<PerlengkapanApprovalPage />} />
+            <Route path="/bill-perlengkapan" element={<BillPerlengkapanPage />} />
         </Route>
       </Routes>
     </AuthProvider>
