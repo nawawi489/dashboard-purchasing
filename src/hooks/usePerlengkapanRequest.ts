@@ -8,6 +8,8 @@ type GroupedItems = Record<string, LineItem[]>
 export type PerlengkapanRequestSubmitPayload = {
   date: string
   outlet: string
+  supplier: string
+  note: string
   items: LineItem[]
 }
 
@@ -17,14 +19,13 @@ export function usePerlengkapanRequest() {
 
   const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10))
   const [outlet, setOutlet] = useState<string>('')
+  const [supplier, setSupplier] = useState<string>('')
+  const [note, setNote] = useState<string>('')
   const [itemId, setItemId] = useState<string>('')
   const [itemName, setItemName] = useState<string>('')
   const [unit, setUnit] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
   const [price, setPrice] = useState<number>(0)
-  const [coa, setCoa] = useState<string>('')
-  const [coaDescription, setCoaDescription] = useState<string>('')
-  const [category, setCategory] = useState<string>('')
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [itemsList, setItemsList] = useState<LineItem[]>([])
 
@@ -34,9 +35,6 @@ export function usePerlengkapanRequest() {
     setUnit('')
     setQuantity(1)
     setPrice(0)
-    setCoa('')
-    setCoaDescription('')
-    setCategory('')
   }
 
   const handleSelectItem = (item: ItemRow | null, name: string) => {
@@ -45,9 +43,6 @@ export function usePerlengkapanRequest() {
       setItemId(item.id || '')
       setUnit(item.unit)
       setPrice(item.price || 0)
-      setCoa(item.coa || '')
-      setCoaDescription(item.coaDescription || '')
-      setCategory(item.category || '')
     }
   }
 
@@ -72,9 +67,6 @@ export function usePerlengkapanRequest() {
           unit,
           quantity,
           price,
-          coa,
-          coaDescription,
-          category,
         },
       ])
     }
@@ -101,6 +93,8 @@ export function usePerlengkapanRequest() {
     const payload: PerlengkapanRequestSubmitPayload = {
       date,
       outlet,
+      supplier: supplier.trim(),
+      note: note.trim(),
       items: itemsList,
     }
     navigate('/confirm-perlengkapan', { state: payload })
@@ -115,24 +109,24 @@ export function usePerlengkapanRequest() {
     setOutlet(e.target.value)
   }
 
+  const handleSupplierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSupplier(e.target.value)
+  }
+
+  const handleNoteChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setNote(e.target.value)
+  }
+
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setQuantity(Number(e.target.value))
   }
 
+  const handleUnitChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUnit(e.target.value)
+  }
+
   const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPrice(Number(e.target.value))
-  }
-
-  const handleCoaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCoa(e.target.value)
-  }
-
-  const handleCoaDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCoaDescription(e.target.value)
-  }
-
-  const handleCategoryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setCategory(e.target.value)
   }
 
   const handleItemQuantityChange = (idx: number, val: number) => {
@@ -154,23 +148,22 @@ export function usePerlengkapanRequest() {
     outlets,
     date,
     outlet,
+    supplier,
+    note,
     itemName,
     unit,
     quantity,
     price,
-    coa,
-    coaDescription,
-    category,
     submitting,
     itemsList,
     groupedItems,
     handleDateChange,
     handleOutletChange,
+    handleSupplierChange,
+    handleNoteChange,
     handleQuantityChange,
+    handleUnitChange,
     handlePriceChange,
-    handleCoaChange,
-    handleCoaDescriptionChange,
-    handleCategoryChange,
     handleItemQuantityChange,
     handleRemoveItem,
     handleSubmit,

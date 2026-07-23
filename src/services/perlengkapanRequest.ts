@@ -7,13 +7,12 @@ export type PerlengkapanRequestPayload = {
   version: string
   'Tanggal Permintaan': string
   Outlet: string
+  'Nama Supplier': string
+  Keterangan: string
   Status: string
   Items: Array<{
     'Kode Item': string
     'Deskripsi Item': string
-    'Kategori Item': string
-    'COA': string
-    'Deskripsi COA': string
     Satuan: string
     'Harga Satuan': number
     'Total QTY': number
@@ -24,12 +23,16 @@ export type PerlengkapanRequestPayload = {
 export function buildPerlengkapanRequestBody(
   date: string,
   outlet: string,
+  supplier: string,
+  note: string,
   items: LineItem[],
 ): PerlengkapanRequestPayload {
   return {
     version: 'v1',
     'Tanggal Permintaan': date,
     Outlet: outlet,
+    'Nama Supplier': supplier,
+    Keterangan: note,
     Status: 'Submitted',
     Items: items.map(it => {
       const harga = it.price || 0
@@ -37,9 +40,6 @@ export function buildPerlengkapanRequestBody(
       return {
         'Kode Item': it.id || '',
         'Deskripsi Item': it.name,
-        'Kategori Item': it.category || '',
-        'COA': it.coa || '',
-        'Deskripsi COA': it.coaDescription || '',
         Satuan: it.unit,
         'Harga Satuan': harga,
         'Total QTY': it.quantity,

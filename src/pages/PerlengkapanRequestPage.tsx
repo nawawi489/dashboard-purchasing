@@ -10,22 +10,21 @@ export default function PerlengkapanRequestPage() {
     outlets,
     date,
     outlet,
+    supplier,
+    note,
     itemName,
     unit,
     quantity,
     price,
-    coa,
-    coaDescription,
-    category,
     submitting,
     itemsList,
     handleDateChange,
     handleOutletChange,
+    handleSupplierChange,
+    handleNoteChange,
     handleQuantityChange,
+    handleUnitChange,
     handlePriceChange,
-    handleCoaChange,
-    handleCoaDescriptionChange,
-    handleCategoryChange,
     handleItemQuantityChange,
     handleRemoveItem,
     handleSubmit,
@@ -46,7 +45,7 @@ export default function PerlengkapanRequestPage() {
       <section className="panel">
         <div className="form-grid">
           <div className="control">
-            <label className="label">Tanggal</label>
+            <label className="label">Tanggal Pengajuan</label>
             <input type="date" className="input" value={date} onChange={handleDateChange} />
           </div>
           <div className="control">
@@ -56,6 +55,15 @@ export default function PerlengkapanRequestPage() {
               {outlets.map(o => (<option key={o} value={o}>{o}</option>))}
             </select>
           </div>
+          <div className="control">
+            <label className="label">Nama Supplier</label>
+            <input
+              className="input"
+              placeholder="Nama supplier"
+              value={supplier}
+              onChange={handleSupplierChange}
+            />
+          </div>
 
           <ItemSearchDropdown
             value={itemName}
@@ -64,28 +72,46 @@ export default function PerlengkapanRequestPage() {
           />
 
           <div className="control">
-            <label className="label">Satuan</label>
-            <input className="input" placeholder="Contoh: pcs" value={unit} readOnly />
-          </div>
-          <div className="control">
-            <label className="label">COA</label>
-            <input className="input" placeholder="Contoh: 6200" value={coa} onChange={handleCoaChange} />
-          </div>
-          <div className="control">
-            <label className="label">Deskripsi COA</label>
-            <input className="input" placeholder="Contoh: Beban Perlengkapan Outlet" value={coaDescription} onChange={handleCoaDescriptionChange} />
-          </div>
-          <div className="control">
-            <label className="label">Kategori Item</label>
-            <input className="input" placeholder="Contoh: ATK" value={category} onChange={handleCategoryChange} />
-          </div>
-          <div className="control">
-            <label className="label">Harga</label>
-            <input type="number" min={0} className="input" value={price} onChange={handlePriceChange} />
+            <label className="label">Satuan Barang</label>
+            <input
+              className="input"
+              placeholder="Contoh: pcs, unit, set"
+              value={unit}
+              onChange={handleUnitChange}
+            />
           </div>
           <div className="control">
             <label className="label">Jumlah</label>
-            <input type="number" min={1} className="input" value={quantity} onChange={handleQuantityChange} />
+            <input
+              type="number"
+              min={1}
+              className="input"
+              value={quantity}
+              onChange={handleQuantityChange}
+              onWheel={e => e.currentTarget.blur()}
+            />
+          </div>
+          <div className="control">
+            <label className="label">Harga Satuan</label>
+            <input
+              type="number"
+              min={0}
+              className="input"
+              placeholder="Masukkan harga satuan"
+              value={price || ''}
+              onChange={handlePriceChange}
+              onWheel={e => e.currentTarget.blur()}
+            />
+          </div>
+          <div className="control" style={{ gridColumn: '1 / -1' }}>
+            <label className="label">Catatan</label>
+            <textarea
+              className="input"
+              rows={3}
+              placeholder="Catatan tambahan (opsional)"
+              value={note}
+              onChange={handleNoteChange}
+            />
           </div>
         </div>
         <div className="actions">
@@ -130,6 +156,7 @@ export default function PerlengkapanRequestPage() {
                       style={{ width: 60, textAlign: 'center', padding: '4px', border: '1px solid #ccc', borderRadius: 4 }}
                       value={it.quantity}
                       onChange={e => handleItemQuantityChange(idx, Number(e.target.value))}
+                      onWheel={e => e.currentTarget.blur()}
                     />
                     <button
                       className="btn"
